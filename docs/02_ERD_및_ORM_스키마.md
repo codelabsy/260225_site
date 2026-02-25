@@ -20,7 +20,7 @@ erDiagram
     users ||--o{ upload_histories : "업로드자"
 
     companies ||--o{ memos : "업체메모"
-    companies ||--o{ company_details : "상세정보"
+    companies ||--|| company_details : "상세정보"
 
     shopping_db ||--o{ memos : "쇼핑DB메모"
     shopping_db ||--o{ status_histories : "상태이력"
@@ -61,7 +61,7 @@ erDiagram
 
     company_details {
         INTEGER id PK "자동 증가"
-        INTEGER company_id FK UK "업체 ID (1:1)"
+        INTEGER company_id FK "업체 ID - UNIQUE 1:1"
         TEXT contract_start "계약 시작일"
         TEXT contract_end "계약 종료일"
         TEXT business_name "업체명"
