@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ERP + CRM 통합 시스템 - 기능 확인서</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #f8f9fa;
+    color: #1a1a1a;
+    line-height: 1.6;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 40px 24px;
+  }
+
+  /* 헤더 */
+  .doc-header {
+    text-align: center;
+    padding: 48px 0 40px;
+    border-bottom: 3px solid #1a1a1a;
+    margin-bottom: 12px;
+  }
+  .doc-header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+  }
+  .doc-header .subtitle {
+    font-size: 15px;
+    color: #666;
+    font-weight: 400;
+  }
+  .doc-meta {
+    display: flex;
+    justify-content: flex-end;
+    gap: 24px;
+    padding: 12px 0 32px;
+    font-size: 13px;
+    color: #888;
+  }
+
+  /* 안내문 */
+  .notice {
+    background: #f0f4ff;
+    border: 1px solid #d0daf0;
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 40px;
+    font-size: 14px;
+    color: #444;
+    line-height: 1.8;
+  }
+  .notice strong { color: #1a1a1a; }
+
+  /* 섹션 */
+  .section {
+    margin-bottom: 48px;
+  }
+  .section-title {
+    font-size: 20px;
+    font-weight: 700;
+    padding: 12px 0;
+    border-bottom: 2px solid #1a1a1a;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-title .num {
+    background: #1a1a1a;
+    color: #fff;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+  .section-desc {
+    font-size: 13px;
+    color: #888;
+    padding: 8px 0 16px 42px;
+  }
+
+  /* 테이블 */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    table-layout: fixed;
+  }
+  thead th {
+    background: #f5f5f5;
+    font-weight: 600;
+    text-align: left;
+    padding: 12px 16px;
+    border-bottom: 2px solid #ddd;
+    font-size: 13px;
+    color: #555;
+  }
+  thead th:first-child { width: 48px; text-align: center; }
+  thead th:nth-child(2) { width: auto; }
+  thead th:nth-child(3) { width: 340px; }
+  thead th:last-child { width: 80px; text-align: center; }
+
+  tbody td {
+    padding: 14px 16px;
+    border-bottom: 1px solid #eee;
+    vertical-align: top;
+  }
+  tbody td:first-child {
+    text-align: center;
+    color: #999;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  tbody td:last-child { text-align: center; }
+
+  tbody tr:hover { background: #fafbff; }
+
+  .func-name {
+    font-weight: 600;
+    color: #1a1a1a;
+    display: block;
+    margin-bottom: 2px;
+  }
+  .func-detail {
+    font-size: 13px;
+    color: #777;
+    line-height: 1.5;
+  }
+
+  /* 체크박스 */
+  .confirm-box {
+    width: 22px;
+    height: 22px;
+    border: 2px solid #ccc;
+    border-radius: 4px;
+    display: inline-block;
+    vertical-align: middle;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.15s;
+  }
+  .confirm-box:hover { border-color: #888; }
+  .confirm-box.checked {
+    background: #2563eb;
+    border-color: #2563eb;
+  }
+  .confirm-box.checked::after {
+    content: '';
+    position: absolute;
+    left: 5px;
+    top: 1px;
+    width: 6px;
+    height: 12px;
+    border: solid #fff;
+    border-width: 0 2.5px 2.5px 0;
+    transform: rotate(45deg);
+  }
+
+  /* 서브 카테고리 행 */
+  .sub-header td {
+    background: #fafafa;
+    padding: 10px 16px;
+    font-weight: 600;
+    font-size: 13px;
+    color: #555;
+    border-bottom: 1px solid #e0e0e0;
+  }
+
+  /* 권한 태그 */
+  .tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+  .tag-admin { background: #fef3c7; color: #92400e; }
+  .tag-all { background: #dbeafe; color: #1e40af; }
+  .tag-employee { background: #d1fae5; color: #065f46; }
+
+  /* 서명란 */
+  .signature-section {
+    margin-top: 64px;
+    padding-top: 40px;
+    border-top: 2px solid #1a1a1a;
+  }
+  .signature-section h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 32px;
+  }
+  .signature-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+  }
+  .signature-box {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 24px;
+  }
+  .signature-box .label {
+    font-size: 13px;
+    color: #888;
+    margin-bottom: 4px;
+  }
+  .signature-box .line {
+    border-bottom: 1px solid #ccc;
+    height: 36px;
+    margin-bottom: 16px;
+  }
+
+  /* 집계 바 */
+  .summary-bar {
+    display: flex;
+    justify-content: flex-end;
+    gap: 24px;
+    padding: 16px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    border-top: 2px solid #1a1a1a;
+    margin-top: 4px;
+  }
+  .summary-bar span { color: #2563eb; }
+
+  /* 프린트 */
+  @media print {
+    body { background: #fff; }
+    .container { padding: 20px 0; }
+    .doc-header { padding: 24px 0 20px; }
+    .section { page-break-inside: avoid; }
+    table { page-break-inside: auto; }
+    tbody tr { page-break-inside: avoid; }
+    .notice { background: #f0f4ff !important; }
+    .confirm-box { border: 2px solid #999; }
+    .no-print { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- 헤더 -->
+  <div class="doc-header">
+    <h1>ERP + CRM 통합 시스템</h1>
+    <div class="subtitle">기능 확인서 (Feature Confirmation)</div>
+  </div>
+  <div class="doc-meta">
+    <div>문서버전 : v1.0</div>
+    <div>작성일 : 2026. 02. 25</div>
+  </div>
+
+  <!-- 안내문 -->
+  <div class="notice">
+    본 문서는 <strong>ERP + CRM 통합 관리 시스템</strong>의 개발 범위를 확정하기 위한 기능 확인서입니다.<br>
+    각 항목을 확인하신 후 <strong>확인란에 체크</strong>해 주시기 바랍니다.<br>
+    체크되지 않은 항목은 개발 범위에서 제외될 수 있습니다.
+  </div>
+
+  <!-- ========== 1. 계정 및 권한 ========== -->
+  <div class="section">
+    <div class="section-title">
+      <div class="num">1</div>
+      계정 및 권한 관리
+    </div>
+    <div class="section-desc">로그인, 계정 관리, 역할별 권한 분리</div>
+    <table>
+      <thead>
+        <tr>
+          <th>No</th>
+          <th>기능</th>
+          <th>상세 내용</th>
+          <th>확인</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1-1</td>
+          <td>
+            <span class="func-name">로그인 / 로그아웃</span>
+            <span class="func-detail">아이디·비밀번호 입력 후 로그인, 세션 기반 인증 유지, 로그아웃 시 세션 파기</span>
+          </td>
+          <td class="func-detail">- 로그인 성공 시 대시보드로 이동<br>- 세션 유효시간 8시간 (근무시간 기준)<br>- 로그인/로그아웃 시간 자동 기록</td>
+          <td><div class="confirm-box" onclick="this.classList.toggle('checked')"></div></td>
+        </tr>
+        <tr>
+          <td>1-2</td>
+          <td>
+            <span class="func-name">직원 계정 생성</span>
+            <span class="func-detail">관리자가 직원 계정을 새로 생성</span>
+          </td>
+          <td class="func-detail">- 입력: 아이디, 비밀번호, 이름, 직급, 연락처, 이메일(선택)<br>- 아이디 중복 자동 검사<br>- 비밀번호 암호화 저장</td>
+          <td><div class="confirm-box" onclick="this.classList.toggle('checked')"></div></td>
+        </tr>
+        <tr>
+          <td>1-3</td>
+          <td>
+            <span class="func-name">직원 계정 수정</span>
+            <span class="func-detail">관리자가 기존 직원 정보를 수정</span>
+          </td>
+          <td class="func-detail">- 이름, 직급, 연락처, 이메일, 비밀번호 변경 가능<br>- 수정 이력 로그 기록</td>
+          <td><div class="confirm-box" onclick="this.classList.toggle('checked')"></div></td>
+        </tr>
+        <tr>
+          <td>1-4</td>
+          <td>
+            <span class="func-name">직원 계정 삭제 (비활성화)</span>
+            <span class="func-detail">관리자가 직원 계정을 비활성화 처리</span>
+          </td>
+          <td class="func-detail">- 완전 삭제가 아닌 비활성화 처리<br>- 비활성화 시 배정된 DB 자동 회수<br>- 기존 데이터(메모, 이력 등) 보존</td>
+          <td><div class="confirm-box" onclick="this.classList.toggle('checked')"></div></td>
+        </tr>
+        <tr>
+          <td>1-5</td>
+          <td>
+            <span class="func-name">역할별 권한 분리</span>
+            <span class="func-detail">관리자 / 직원 2개 역할, 기능별 접근 제한</span>
+          </td>
+          <td class="func-detail">
+            <strong>관리자 전용 :</strong> 전체 데이터 조회, 직원 계정 관리, DB 배분/회수, 엑셀 다운로드, 전체 통계, 활동 로그, 업체 등록/수정<br><br>
+            <strong>직원 :</strong> 본인 배정 DB만 조회/수정, 콜 처리, 메모 작성, 본인 매출/통계 조회, 엑셀 업로드 (다운로드 불가)
+          </td>
+          <td><div class="confirm-box" onclick="this.classList.toggle('checked')"></div></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ========== 2. ERP 매출 관리 ========== -->
+  <div class="section">
+    <div class="section-title">
+      <div class="num">2</div>
+      ERP - 매출 관리
+    </div>
+    <div class="section-desc">거래 업체 등록, 매출/순마진 관리, 계약 이월</div>
+    <table>
+      <thead>
+        <tr>
+          <th>No</th>
+          <th>기능</th>
+          <th>상세 내용</th>
+          <th>확인</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>2-1</td>
+          <td>
+            <span class="func-name">업체 등록</span>
+            <span class="func-detail">신규 거래 업체를 시스템에 등록 <span class="tag tag-admin">관리자</span></span>
+          </td>
+          <td class="func-detail">
+            <strong>기본 항목 :</strong> 담당자, 등록일, 상품명, 상호명, 결제금액, 계산서 발행금액, 실행비, 직급<br><br>
+            <strong>상세 항목 :</strong> 계약 시작일/종료일, 업체명, 대표자명, 연락처, 결제구분, 사업자번호, 작업 키워드, 작업 내용, 이메일, 네이버 계정 정보, 실행비 입력란
+          </td>
+          <td><div class="confirm-box" onclick="this.classList.toggle('checked')"></div></td>
+        </tr>
+        <tr>
+          <td>2-2</td>
+          <td>
+            <span class="func-name">업체 수정</span>
+            <span class="func-detail">등록된 업체 정보를 수정 <span class="tag tag-admin">관리자</span></span>
+          </td>
+          <td class="func-detail">- 모든 필드 수정 가능<br>- 금액 수정 시 순마진 자동 재계산<br>- 수정 전후 데이터 이력 보존</td>
+          <td><div class="confirm-box" onclick="this.classList.toggle('checked')"></div></td>
+        </tr>
+        <tr>
+          <td>2-3</td>
+          <td>
+            <span class="func-name">업체 목록 조회</span>
+            <span class="func-detail">업체 목록을 다양한 조건으로 조회</span>
+          </td>
+          <td class="func-detail">
+            - 필터: 기간(년/월/일), 담당자, 결제구분<br>
+            - 검색: 상호명, 대표자명, 연락처, 사업자번호 (부분 검색)<br>
+            - 정렬: 등록일, 결제금액, 순마진 기준<br>
+            - 표시 개수: 50 / 100 / 300 / 500 / 1000건 선택<br>
+            - 관리자는 전체, 직원은 본인 담당만 조회
+          </td>
+          <td><div class="confirm-box" onclick="this.classList.toggle('checked')"></div></td>
+        </tr>
+        <tr>
+          <td>2-4</td>
+          <td>
+            <span class="func-name">업체 상세 조회</span>
+            <span class="func-detail">업체의 전체 정보 및 히스토리 조회</span>
+          </td>
+          <td class="func-detail">- 기본정보 + 상세정보 전체 표시<br>- 일자별 메모 히스토리 목록<br>- 순마진 자동계산값 표시</td>
+          <td><div class="confirm-box" onclick="this.classList.toggle('checked')"></div></td>
+        </tr>
+        <tr>
+          <td>2-5</td>
+          <td>
+            <span class="func-name">매출 자동 계산</span>
+            <span class="func-detail">금액 입력 시 부가세·순마진 실시간 자동 계산</span>
+          </td>
+          <td class="func-detail">
+            - 부가세 = 결제금액 / 11<br>
+            - 순마진 = 결제금액 - 실행비 - 부가세<br>
+            - 결제금액 또는 실행비 입력/수정 시 즉시 재계산<br>
+            - 집계: 총 매출, 총 실행비, 총 부가세, 총 순마진
+          </td>
+          <td><div class="confirm-box" onclick="this.classList.toggle('checked')"></div></td>
+        </tr>
+        <tr>
+          <td>2-6</td>
+          <td>
+            <span class="func-name">계약 이월 (연장)</span>
+            <span class="func-detail">기존 업체 정보를 복사하여 신규 계약으로 등록 <span class="tag tag-admin">관리자</span></span>
+          </td>
+          <td class="func-detail">
+            - "이월" 버튼 클릭 시 기존 정보 자동 복사<br>
+            - <strong>복사 항목 :</strong> 업체명, 대표자명, 연락처, 사업자번호, 결제구분, 작업키워드, 작업내용, 이메일, 네이버 계정, 담당자<br>
+            - <strong>초기화 항목 :</strong> 계약 시작일/종료일, 결제금액, 실행비, 메모<br>
+            - 계약기간 수정 후 신규 레코드로 별도 저장<br>
+            - 원본 데이터는 그대로 유지
+          </td>
+          <td><div class="confirm-box" onclick="this.classList.toggle('checked')"></div></td>
+        </tr>
+        <tr>
+          <td>2-7</td>
+          <td>
+            <span class="func-name">일자별 메모 (히스토리 누적)</span>
+            <span class="func-detail">업체별 메모를 날짜순으로 누적 기록</span>
+          </td>
+          <td class="func-detail">
+            - 메모 작성 시 작성자·작성시간 자동 기록<br>
+            - 기존 메모 덮어쓰기 금지 (수정/삭제 불가)<br>
+            - 새 메모만 추가 가능, 시간 역순(최신순) 표시
+          </td>
+          <td><div class="confirm-box" onclick="this.classList.toggle('checked')"></div></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ========== 3. 네이버 쇼핑 DB ========== -->
+  <div class="section">
+    <div class="section-title">
+      <div class="num">3</div>
+      CRM - 네이버 쇼핑 DB 관리
+    </div>
+    <div class="section-desc">엑셀 업로드, 콜 상태 관리, DB 배분/회수</div>
+    <table>
+      <thead>
+        <tr>
+          <th>No</th>
+          <th>기능</th>
+          <th>상세 내용</th>
+          <th>확인</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>3-1</td>
+          <td>
+            <span class="func-name">엑셀 DB 업로드</span>
+            <span class="func-detail">엑셀 파일을 업로드하여 쇼핑 DB 등록 <span class="tag tag-all">관리자+직원</span></span>
+          </td>
+          <td class="func-detail">
+            - 지원 형식: .xlsx, .xls, .csv<br>
+            - 전화번호 기준 중복 자동 체크<br>
+            - 중복 시 표시 후 선택 (건너뛰기/덮어쓰기)<br>
+            - 업로드한 직원 계정에 자동 귀속<br>
+            - 업로드 결과 표시 (전체/성공/중복 건수)
+          </td>
+          <td><div class="confirm-box" onclick="this.classList.toggle('checked')"></div></td>
+        </tr>
+        <tr>
+          <td>3-2</td>
+          <td>
+            <span class="func-name">업로드 이력 관리</span>
+            <span class="func-detail">엑셀 업로드 이력을 기록하고 조회</span>
+          </td>
+          <td class="func-detail">- 업로드 일시, 파일명, 전체/중복/성공 건수, 업로드자 기록<br>- 관리자: 전체 이력 / 직원: 본인 이력만 조회</td>
+          <td><div class="confirm-box" onclick="this.classList.toggle('checked')"></div></td>
+        </tr>
+        <tr>
+          <td>3-3</td>
+          <td>
+            <span class="func-name">쇼핑 DB 목록 조회</span>
+            <span class="func-detail">필터/검색 기능으로 쇼핑 DB 목록 조회</span>
+          </td>
+          <td class="func-detail">
+            - 필터: 상태값, 기간(년/월/일), 담당자(관리자만)<br>
+            - 검색: 상호명, 연락처, 이름 (부분 검색)<br>
+            - 정렬: 등록일, 상태, 최근 활동일 기준<br>
+            - 표시 개수: 50 / 100 / 300 / 500 / 1000건<br>
+            - 관리자는 전체, 직원은 본인 배정만 조회
+          </td>
+          <td><div class="confirm-box" onclick="this.classList.toggle('checked')"></div></td>
+        </tr>
+        <tr>
+          <td>3-4</td>
+          <td>
+            <span class="func-name">콜 상태 변경</span>
+            <span class="func-detail">DB 레코드의 콜 처리 상태를 변경 <span class="tag tag-all">관리자+직원</span></span>
+          </td>
+          <td class="func-detail">
+            - 상태값: <strong>부재 / 재통 / 가망 / 계약완료 / 안함</strong><br>
+            - 상태 변경 시 변경 시간 자동 기록<br>
+            - 변경자 자동 기록<br>
+            - 상태 변경 히스토리 누적 저장 (이전 기록 보존)
+          </td>
+          <td><div class="confirm-box" onclick="this.classList.toggle('checked')"></div></td>
+        </tr>
+        <tr>
+          <td>3-5</td>
+          <td>
+            <span class="func-name">DB 배분</span>
+            <span class="func-detail">관리자가 쇼핑 DB를 직원에게 배분 <span class="tag tag-admin">관리자</span></span>
+          </td>
+          <td class="func-detail">- 다건 선택 후 일괄 배분 가능<br>- 배분 대상 직원 선택<br>- 이미 배분된 DB는 회수 후 재배분 필요<br>- 배분 이력 자동 기록</td>
+          <td><div class="confirm-box" onclick="this.classList.toggle('checked')"></div></td>
+        </tr>
+        <tr>
+          <td>3-6</td>
+          <td>
+            <span class="func-name">DB 회수</span>
+            <span class="func-detail">관리자가 배분된 DB를 회수 <span class="tag tag-admin">관리자</span></span>
+          </td>
+          <td class="func-detail">- 다건 선택 후 일괄 회수 가능<br>- 회수 시 담당자 해제 (미배분 상태)<br>- 기존 상태 히스토리·메모는 유지<br>- 회수 이력 자동 기록</td>
+          <td><div class="confirm-box" onclick="this.classList.toggle('checked')"></div></td>
+        </tr>
+        <tr>
+          <td>3-7</td>
+          <td>
+            <span class="func-name">메모 작성</span>
+            <span class="func-detail">쇼핑 DB 레코드별 메모 누적 기록</span>
+          </td>
+          <td class="func-detail">- 작성자·작성시간 자동 기록<br>- 덮어쓰기 금지, 히스토리 누적 방식<br>- 최신순 표시, 삭제 불가</td>
+          <td><div class="confirm-box" onclick="this.classList.toggle('checked')"></div></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ========== 4. 네이버 플레이스 DB ========== -->
+  <div class="section">
+    <div class="section-title">
+      <div class="num">4</div>
+      CRM - 네이버 플레이스 DB 관리
+    </div>
+    <div class="section-desc">외부 광고 매체 DB 등록, 콜 상태 관리, 배분/회수</div>
+    <table>
+      <thead>
+        <tr>
+          <th>No</th>
+          <th>기능</th>
+          <th>상세 내용</th>
+          <th>확인</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>4-1</td>
+          <td>
+            <span class="func-name">플레이스 DB 등록</span>
+            <span class="func-detail">관리자가 외부 광고 매체 DB를 직접 등록 <span class="tag tag-admin">관리자</span></span>
+          </td>
+          <td class="func-detail">
+            - 입력 항목: 상호명, 연락처, 지역, DB 등록일자, 알게된 경로, 메모<br>
+            - 연락처 중복 체크 지원
+          </td>
+          <td><div class="confirm-box" onclick="this.classList.toggle('checked')"></div></td>
+        </tr>
+        <tr>
+          <td>4-2</td>
+          <td>
+            <span class="func-name">플레이스 DB 목록 조회</span>
+            <span class="func-detail">필터/검색 기능으로 플레이스 DB 목록 조회</span>
+          </td>
+          <td class="func-detail">
+            - 필터: 상태값, 기간(년/월/일), 담당자(관리자만), 지역, 알게된 경로<br>
+            - 검색: 상호명, 연락처 (부분 검색)<br>
+            - 표시 개수: 50 / 100 / 300 / 500 / 1000건<br>
+            - 관리자는 전체, 직원은 본인 배정만 조회
+          </td>
+          <td><div class="confirm-box" onclick="this.classList.toggle('checked')"></div></td>
+        </tr>
+        <tr>
+          <td>4-3</td>
+          <td>
+            <span class="func-name">콜 상태 변경</span>
+            <span class="func-detail">DB 레코드의 콜 처리 상태를 변경 <span class="tag tag-all">관리자+직원</span></span>
+          </td>
+          <td class="func-detail">
+            - 상태값: <strong>부재 / 재통 / 가망 / 거절 / 계약완료</strong><br>
+            - 상태 변경 시 변경 시간·변경자 자동 기록<br>
+            - 상태 변경 히스토리 누적 저장
+          </td>
+          <td><div class="confirm-box" onclick="this.classList.toggle('checked')"></div></td>
+        </tr>
+        <tr>
+          <td>4-4</td>
+          <td>
+            <span class="func-name">DB 배분</span>
+            <span class="func-detail">관리자가 플레이스 DB를 직원에게 배분 <span class="tag tag-admin">관리자</span></span>
+          </td>
+          <td class="func-detail">- 다건 선택 후 일괄 배분 가능<br>- 배분 대상 직원 선택<br>- 배분 이력 자동 기록</td>
+          <td><div class="confirm-box" onclick="this.classList.toggle('checked')"></div></td>
+        </tr>
+        <tr>
+          <td>4-5</td>
+          <td>
+            <span class="func-name">DB 회수</span>
+            <span class="func-detail">관리자가 배분된 DB를 회수 <span class="tag tag-admin">관리자</span></span>
+          </td>
+          <td class="func-detail">- 다건 선택 후 일괄 회수 가능<br>- 기존 상태 히스토리·메모 유지<br>- 회수 이력 자동 기록</td>
+          <td><div class="confirm-box" onclick="this.classList.toggle('checked')"></div></td>
+        </tr>
+        <tr>
+          <td>4-6</td>
+          <td>
+            <span class="func-name">메모 작성</span>
+            <span class="func-detail">플레이스 DB 레코드별 메모 누적 기록</span>
+          </td>
+          <td class="func-detail">- 작성자·작성시간 자동 기록<br>- 덮어쓰기 금지, 히스토리 누적 방식<br>- 최신순 표시, 삭제 불가</td>
+          <td><div class="confirm-box" onclick="this.classList.toggle('checked')"></div></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ========== 5. 대시보드 ========== -->
+  <div class="section">
+    <div class="section-title">
+      <div class="num">5</div>
+      대시보드
+    </div>
+    <div class="section-desc">매출 현황, 위젯 카드, 그래프 시각화</div>
+    <table>
+      <thead>
+        <tr>
+          <th>No</th>
+          <th>기능</th>
+          <th>상세 내용</th>
+          <th>확인</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>5-1</td>
+          <td>
+            <span class="func-name">관리자 매출 집계 대시보드</span>
+            <span class="func-detail">전체 매출 현황을 한눈에 확인 <span class="tag tag-admin">관리자</span></span>
+          </td>
+          <td class="func-detail">
+            - 조회 단위: 년 / 월 / 일 선택<br>
+            - 자동 집계: 총 매출, 총 실행비, 총 부가세, 총 순마진<br>
+            - 직원별 매출·순마진 비교<br>
+            - 목표 대비 달성률 표시<br>
+            - 기간 선택 필터<br>
+            - 엑셀 다운로드 가능
+          </td>
+          <td><div class="confirm-box" onclick="this.classList.toggle('checked')"></div></td>
+        </tr>
+        <tr>
+          <td>5-2</td>
+          <td>
+            <span class="func-name">직원 개인 매출 대시보드</span>
+            <span class="func-detail">본인 매출 현황만 조회 <span class="tag tag-employee">직원</span></span>
+          </td>
+          <td class="func-detail">
+            - 조회 단위: 년 / 월 / 일<br>
+            - 표시: 본인 총 매출, 총 실행비, 총 부가세, 총 순마진<br>
+            - 월별 그래프 표시<br>
+            - 목표 대비 달성률 표시<br>
+            - 인센티브 기준 자동 계산 (옵션)<br>
+            - 타 직원 데이터 접근 불가, 다운로드 불가
+          </td>
+          <td><div class="confirm-box" onclick="this.classList.toggle('checked')"></div></td>
+        </tr>
+        <tr>
+          <td>5-3</td>
+          <td>
+            <span class="func-name">위젯형 요약 카드</span>
+            <span class="func-detail">대시보드 상단에 주요 지표를 카드 형태로 표시</span>
+          </td>
+          <td class="func-detail">
+            - 금일 매출 / 금월 매출<br>
+            - 금일 순마진 / 금월 순마진<br>
+            - 금일 신규 DB 건수<br>
+            - 금일 계약완료 건수<br>
+            - 페이지 로드 시 자동 갱신
+          </td>
+          <td><div class="confirm-box" onclick="this.classList.toggle('checked')"></div></td>
+        </tr>
+        <tr>
+          <td>5-4</td>
+          <td>
+            <span class="func-name">그래프 시각화</span>
+            <span class="func-detail">매출·실적 데이터를 그래프로 표현</span>
+          </td>
+          <td class="func-detail">
+            - 월별 매출 추이 (선 그래프)<br>
+            - 직원별 실적 비교 (막대 그래프)<br>
+            - 상태별 DB 현황 (파이 차트)
+          </td>
+          <td><div class="confirm-box" onclick="this.classList.toggle('checked')"></div></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ========== 6. 통계 ========== -->
+  <div class="section">
+    <div class="section-title">
+      <div class="num">6</div>
+      통계
+    </div>
+    <div class="section-desc">계약 건수 집계, 상태별 통계, 매출 추이, 직원 비교</div>
+    <table>
+      <thead>
+        <tr>
+          <th>No</th>
+          <th>기능</th>
+          <th>상세 내용</th>
+          <th>확인</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>6-1</td>
+          <td>
+            <span class="func-name">직원별 계약완료 건수 집계</span>
+            <span class="func-detail">직원별 계약 성사 건수 자동 집계</span>
+          </td>
+          <td class="func-detail">
+            - 쇼핑 DB + 플레이스 DB 합산 집계<br>
+            - 조회 단위: 년 / 월 / 일<br>
+            - 관리자: 전체 직원 / 직원: 본인만
+          </td>
+          <td><div class="confirm-box" onclick="this.classList.toggle('checked')"></div></td>
+        </tr>
+        <tr>
+          <td>6-2</td>
+          <td>
+            <span class="func-name">상태별 통계 그래프</span>
+            <span class="func-detail">DB 상태별 분포를 그래프로 시각화 <span class="tag tag-admin">관리자</span></span>
+          </td>
+          <td class="func-detail">
+            - 파이 차트 + 막대 그래프<br>
+            - 쇼핑 DB / 플레이스 DB 각각 + 통합 표시
+          </td>
+          <td><div class="confirm-box" onclick="this.classList.toggle('checked')"></div></td>
+        </tr>
+        <tr>
+          <td>6-3</td>
+          <td>
+            <span class="func-name">기간별 매출 통계</span>
+            <span class="func-detail">기간별 매출 추이를 그래프로 시각화</span>
+          </td>
+          <td class="func-detail">
+            - 선 그래프 + 막대 그래프<br>
+            - 조회 단위: 일별 / 월별 / 년별<br>
+            - 표시 항목: 매출, 실행비, 부가세, 순마진<br>
+            - 관리자: 전체 / 직원: 본인만
+          </td>
+          <td><div class="confirm-box" onclick="this.classList.toggle('checked')"></div></td>
+        </tr>
+        <tr>
+          <td>6-4</td>
+          <td>
+            <span class="func-name">직원별 실적 비교</span>
+            <span class="func-detail">직원 간 실적을 비교 차트로 표시 <span class="tag tag-admin">관리자</span></span>
+          </td>
+          <td class="func-detail">
+            - 비교 항목: 매출액, 순마진, 계약완료 건수, 콜 건수<br>
+            - 수평 막대 그래프
+          </td>
+          <td><div class="confirm-box" onclick="this.classList.toggle('checked')"></div></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ========== 7. 공통 기능 ========== -->
+  <div class="section">
+    <div class="section-title">
+      <div class="num">7</div>
+      공통 기능
+    </div>
+    <div class="section-desc">메모, 검색/필터, 활동 로그, 엑셀 다운로드</div>
+    <table>
+      <thead>
+        <tr>
+          <th>No</th>
+          <th>기능</th>
+          <th>상세 내용</th>
+          <th>확인</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>7-1</td>
+          <td>
+            <span class="func-name">메모 기능 (전체 공통)</span>
+            <span class="func-detail">모든 DB/업체에 적용되는 메모 기능</span>
+          </td>
+          <td class="func-detail">
+            - DB별 개별 메모 작성 가능<br>
+            - 작성자 및 작성시간 자동 기록<br>
+            - 덮어쓰기 금지 (히스토리 누적 방식)<br>
+            - 시간 역순(최신순) 표시<br>
+            - 메모 수정/삭제 불가
+          </td>
+          <td><div class="confirm-box" onclick="this.classList.toggle('checked')"></div></td>
+        </tr>
+        <tr>
+          <td>7-2</td>
+          <td>
+            <span class="func-name">조회 / 필터 / 검색 (전체 공통)</span>
+            <span class="func-detail">모든 목록 화면에 적용되는 공통 기능</span>
+          </td>
+          <td class="func-detail">
+            - 기간 필터: 년 / 월 / 일 선택<br>
+            - 표시 개수: 50 / 100 / 300 / 500 / 1000건 선택<br>
+            - 검색: 이름, 전화번호, 상호명 (부분 검색 지원)
+          </td>
+          <td><div class="confirm-box" onclick="this.classList.toggle('checked')"></div></td>
+        </tr>
+        <tr>
+          <td>7-3</td>
+          <td>
+            <span class="func-name">활동 로그</span>
+            <span class="func-detail">시스템 내 모든 주요 활동을 자동 기록 <span class="tag tag-admin">관리자 조회</span></span>
+          </td>
+          <td class="func-detail">
+            - 기록 대상: 로그인/로그아웃, DB 등록/수정/삭제, 상태 변경, 배분/회수, 엑셀 업로드/다운로드, 업체 등록/수정/이월, 계정 생성/수정/삭제<br>
+            - 기록 항목: 일시, 사용자, 행위, 대상, 변경 전/후 값
+          </td>
+          <td><div class="confirm-box" onclick="this.classList.toggle('checked')"></div></td>
+        </tr>
+        <tr>
+          <td>7-4</td>
+          <td>
+            <span class="func-name">엑셀 다운로드</span>
+            <span class="func-detail">데이터를 엑셀 파일로 다운로드 <span class="tag tag-admin">관리자 전용</span></span>
+          </td>
+          <td class="func-detail">
+            - 다운로드 대상: DB 목록, 매출 데이터, 통계 데이터<br>
+            - 파일 형식: .xlsx<br>
+            - 관리자만 사용 가능 (직원은 다운로드 불가)
+          </td>
+          <td><div class="confirm-box" onclick="this.classList.toggle('checked')"></div></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ========== 8. UI / 화면 구조 ========== -->
+  <div class="section">
+    <div class="section-title">
+      <div class="num">8</div>
+      UI / 화면 구조
+    </div>
+    <div class="section-desc">화면 레이아웃, 디자인 방향, 사용성</div>
+    <table>
+      <thead>
+        <tr>
+          <th>No</th>
+          <th>기능</th>
+          <th>상세 내용</th>
+          <th>확인</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>8-1</td>
+          <td>
+            <span class="func-name">CRM형 3단 레이아웃</span>
+            <span class="func-detail">직관적인 CRM 구조의 화면 레이아웃</span>
+          </td>
+          <td class="func-detail">
+            - 상단: 카테고리 메뉴 (대시보드, ERP매출, 쇼핑DB, 플레이스DB, 통계, 설정)<br>
+            - 좌측: 필터 영역 (기간, 상태, 담당자, 검색)<br>
+            - 중앙: DB 리스트 (테이블 형태)<br>
+            - 우측 또는 팝업: 상세보기 + 메모
+          </td>
+          <td><div class="confirm-box" onclick="this.classList.toggle('checked')"></div></td>
+        </tr>
+        <tr>
+          <td>8-2</td>
+          <td>
+            <span class="func-name">빠른 콜 처리 중심 UI</span>
+            <span class="func-detail">최소 클릭으로 상태 변경이 가능한 UI</span>
+          </td>
+          <td class="func-detail">
+            - 목록에서 바로 상태 변경 가능<br>
+            - 클릭 한 번으로 상태값 선택<br>
+            - 실시간 저장 (AJAX 기반, 페이지 새로고침 없음)
+          </td>
+          <td><div class="confirm-box" onclick="this.classList.toggle('checked')"></div></td>
+        </tr>
+        <tr>
+          <td>8-3</td>
+          <td>
+            <span class="func-name">대시보드 위젯형 구조</span>
+            <span class="func-detail">대시보드에 카드형 위젯으로 정보 표시</span>
+          </td>
+          <td class="func-detail">
+            - 상단: 매출/순마진 요약 카드<br>
+            - 중단: 매출 추이 + 실적 비교 그래프<br>
+            - 하단: 상태별 DB 현황 + 최근 활동 로그
+          </td>
+          <td><div class="confirm-box" onclick="this.classList.toggle('checked')"></div></td>
+        </tr>
+        <tr>
+          <td>8-4</td>
+          <td>
+            <span class="func-name">PC 최적화</span>
+            <span class="func-detail">PC 환경에 최적화된 웹 시스템</span>
+          </td>
+          <td class="func-detail">
+            - 해상도 1280px 이상 최적화<br>
+            - Chrome, Edge 최신 버전 지원<br>
+            - 웹 브라우저에서 동작 (별도 설치 불필요)
+          </td>
+          <td><div class="confirm-box" onclick="this.classList.toggle('checked')"></div></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 집계 -->
+  <div class="summary-bar">
+    전체 기능 항목: <span id="totalCount">0</span>개 &nbsp;|&nbsp;
+    확인 완료: <span id="checkedCount">0</span>개 &nbsp;|&nbsp;
+    미확인: <span id="uncheckedCount">0</span>개
+  </div>
+
+  <!-- 서명란 -->
+  <div class="signature-section">
+    <h3>확인 및 서명</h3>
+    <p style="font-size:14px; color:#666; margin-bottom:24px; line-height:1.8;">
+      위 기능 확인서의 내용을 검토하였으며, 체크된 항목에 대해 개발을 진행하는 것에 동의합니다.<br>
+      체크되지 않은 항목은 개발 범위에서 제외되거나 추후 별도 협의합니다.
+    </p>
+    <div class="signature-grid">
+      <div class="signature-box">
+        <div class="label">의뢰인 (갑)</div>
+        <div class="line"></div>
+        <div class="label">성명</div>
+        <div class="line"></div>
+        <div class="label">서명 / 날짜</div>
+        <div class="line"></div>
+      </div>
+      <div class="signature-box">
+        <div class="label">개발사 (을)</div>
+        <div class="line"></div>
+        <div class="label">성명</div>
+        <div class="line"></div>
+        <div class="label">서명 / 날짜</div>
+        <div class="line"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // 체크박스 카운트
+  function updateCount() {
+    const all = document.querySelectorAll('.confirm-box');
+    const checked = document.querySelectorAll('.confirm-box.checked');
+    document.getElementById('totalCount').textContent = all.length;
+    document.getElementById('checkedCount').textContent = checked.length;
+    document.getElementById('uncheckedCount').textContent = all.length - checked.length;
+  }
+
+  // 초기 카운트
+  updateCount();
+
+  // 체크박스 클릭 시 카운트 업데이트
+  document.querySelectorAll('.confirm-box').forEach(box => {
+    box.addEventListener('click', () => {
+      setTimeout(updateCount, 10);
+    });
+  });
+</script>
+
+</body>
+</html>
