@@ -1000,6 +1000,27 @@
 </div>
 
 <script>
+  const STORAGE_KEY = 'erp_crm_feature_confirm_v1';
+
+  // 체크박스 상태 저장
+  function saveState() {
+    const all = document.querySelectorAll('.confirm-box');
+    const states = [];
+    all.forEach(box => states.push(box.classList.contains('checked')));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(states));
+  }
+
+  // 체크박스 상태 불러오기
+  function loadState() {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (!saved) return;
+    const states = JSON.parse(saved);
+    const all = document.querySelectorAll('.confirm-box');
+    all.forEach((box, i) => {
+      if (states[i]) box.classList.add('checked');
+    });
+  }
+
   // 체크박스 카운트
   function updateCount() {
     const all = document.querySelectorAll('.confirm-box');
@@ -1009,13 +1030,17 @@
     document.getElementById('uncheckedCount').textContent = all.length - checked.length;
   }
 
-  // 초기 카운트
+  // 저장된 상태 복원
+  loadState();
   updateCount();
 
-  // 체크박스 클릭 시 카운트 업데이트
+  // 체크박스 클릭 시 저장 + 카운트 업데이트
   document.querySelectorAll('.confirm-box').forEach(box => {
     box.addEventListener('click', () => {
-      setTimeout(updateCount, 10);
+      setTimeout(() => {
+        saveState();
+        updateCount();
+      }, 10);
     });
   });
 </script>
