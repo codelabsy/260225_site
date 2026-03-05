@@ -243,6 +243,48 @@
   }
   .summary-bar span { color: #2563eb; }
 
+  /* 공유 버튼 */
+  .share-section {
+    text-align: center;
+    padding: 32px 0 0;
+  }
+  .share-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 32px;
+    background: #2563eb;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .share-btn:hover { background: #1d4ed8; }
+  .share-btn:active { background: #1e40af; }
+  .share-toast {
+    display: none;
+    margin-top: 12px;
+    padding: 10px 20px;
+    background: #065f46;
+    color: #fff;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .share-toast.show {
+    display: inline-block;
+    animation: fadeInOut 2.5s ease;
+  }
+  @keyframes fadeInOut {
+    0% { opacity: 0; transform: translateY(4px); }
+    15% { opacity: 1; transform: translateY(0); }
+    75% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+
   /* 프린트 */
   @media print {
     body { background: #fff; }
@@ -997,31 +1039,56 @@
     </div>
   </div>
 
+  <!-- 공유 -->
+  <div class="share-section no-print">
+    <button class="share-btn" onclick="shareState()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+      확인 상태 공유하기
+    </button>
+    <div class="share-toast" id="shareToast">URL이 클립보드에 복사되었습니다!</div>
+  </div>
+
 </div>
 
 <script>
   const STORAGE_KEY = 'erp_crm_feature_confirm_v1';
 
-  // 체크박스 상태 저장
+  // 상태 → 해시 문자열 (예: "101100111...")
+  function statesToHash() {
+    const all = document.querySelectorAll('.confirm-box');
+    let bits = '';
+    all.forEach(box => bits += box.classList.contains('checked') ? '1' : '0');
+    return bits;
+  }
+
+  // 해시 문자열 → 체크박스 복원
+  function hashToStates(hash) {
+    const all = document.querySelectorAll('.confirm-box');
+    for (let i = 0; i < all.length && i < hash.length; i++) {
+      if (hash[i] === '1') all[i].classList.add('checked');
+    }
+  }
+
+  // localStorage 저장
   function saveState() {
-    const all = document.querySelectorAll('.confirm-box');
-    const states = [];
-    all.forEach(box => states.push(box.classList.contains('checked')));
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(states));
+    localStorage.setItem(STORAGE_KEY, statesToHash());
   }
 
-  // 체크박스 상태 불러오기
+  // 상태 복원: URL 해시 우선 → localStorage 폴백
   function loadState() {
+    const hash = location.hash.replace('#', '');
+    if (hash && /^[01]+$/.test(hash)) {
+      hashToStates(hash);
+      saveState();
+      return;
+    }
     const saved = localStorage.getItem(STORAGE_KEY);
-    if (!saved) return;
-    const states = JSON.parse(saved);
-    const all = document.querySelectorAll('.confirm-box');
-    all.forEach((box, i) => {
-      if (states[i]) box.classList.add('checked');
-    });
+    if (saved && /^[01]+$/.test(saved)) {
+      hashToStates(saved);
+    }
   }
 
-  // 체크박스 카운트
+  // 카운트 업데이트
   function updateCount() {
     const all = document.querySelectorAll('.confirm-box');
     const checked = document.querySelectorAll('.confirm-box.checked');
@@ -1030,7 +1097,21 @@
     document.getElementById('uncheckedCount').textContent = all.length - checked.length;
   }
 
-  // 저장된 상태 복원
+  // 공유하기
+  function shareState() {
+    const url = location.origin + location.pathname + '#' + statesToHash();
+    navigator.clipboard.writeText(url).then(() => {
+      const toast = document.getElementById('shareToast');
+      toast.classList.remove('show');
+      void toast.offsetWidth;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2500);
+    }).catch(() => {
+      prompt('아래 URL을 복사하세요:', url);
+    });
+  }
+
+  // 초기화
   loadState();
   updateCount();
 
