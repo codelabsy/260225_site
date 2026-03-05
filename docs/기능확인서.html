@@ -267,8 +267,8 @@
     <div class="subtitle">기능 확인서 (Feature Confirmation)</div>
   </div>
   <div class="doc-meta">
-    <div>문서버전 : v1.0</div>
-    <div>작성일 : 2026. 02. 25</div>
+    <div>문서버전 : v1.1</div>
+    <div>작성일 : 2026. 03. 05</div>
   </div>
 
   <!-- 안내문 -->
@@ -343,6 +343,20 @@
           </td>
           <td><div class="confirm-box" onclick="this.classList.toggle('checked')"></div></td>
         </tr>
+        <tr>
+          <td>1-6</td>
+          <td>
+            <span class="func-name">인센티브 % 설정</span>
+            <span class="func-detail">직원별 인센티브 비율을 설정하고 매출 등록 시 자동 계산 <span class="tag tag-admin">관리자</span></span>
+          </td>
+          <td class="func-detail">
+            - 관리자가 직원별 인센티브 비율(%) 설정<br>
+            - 매출 등록 시 설정된 인센티브 비율로 자동 계산<br>
+            - 인센티브 금액 = 순마진 × 인센티브 비율(%)<br>
+            - 인센티브 비율 변경 이력 기록
+          </td>
+          <td><div class="confirm-box" onclick="this.classList.toggle('checked')"></div></td>
+        </tr>
       </tbody>
     </table>
   </div>
@@ -372,7 +386,7 @@
           </td>
           <td class="func-detail">
             <strong>기본 항목 :</strong> 담당자, 등록일, 상품명, 상호명, 결제금액, 계산서 발행금액, 실행비, 직급<br><br>
-            <strong>상세 항목 :</strong> 계약 시작일/종료일, 업체명, 대표자명, 연락처, 결제구분, 사업자번호, 작업 키워드, 작업 내용, 이메일, 네이버 계정 정보, 실행비 입력란
+            <strong>상세 항목 :</strong> 매출 등록일, 작업 시작일, 작업 종료일, 계약 시작일/종료일, 업체명, 대표자명, 연락처, 결제구분, 사업자번호, 작업 키워드, 작업 내용, 이메일, 네이버 계정 정보, 실행비 입력란
           </td>
           <td><div class="confirm-box" onclick="this.classList.toggle('checked')"></div></td>
         </tr>
@@ -431,8 +445,9 @@
           </td>
           <td class="func-detail">
             - "이월" 버튼 클릭 시 기존 정보 자동 복사<br>
-            - <strong>복사 항목 :</strong> 업체명, 대표자명, 연락처, 사업자번호, 결제구분, 작업키워드, 작업내용, 이메일, 네이버 계정, 담당자<br>
-            - <strong>초기화 항목 :</strong> 계약 시작일/종료일, 결제금액, 실행비, 메모<br>
+            - <strong>복사 항목 :</strong> 업체명, 대표자명, 연락처, 사업자번호, 결제구분, 작업키워드, 작업내용, 이메일, 네이버 계정, 담당자, 결제금액, 실행비, 메모<br>
+            - <strong>초기화 항목 :</strong> 계약 시작일/종료일<br>
+            - 이월된 결제금액, 실행비, 메모는 수정 가능<br>
             - 계약기간 수정 후 신규 레코드로 별도 저장<br>
             - 원본 데이터는 그대로 유지
           </td>
@@ -668,9 +683,11 @@
           </td>
           <td class="func-detail">
             - 조회 단위: 년 / 월 / 일 선택<br>
-            - 자동 집계: 총 매출, 총 실행비, 총 부가세, 총 순마진<br>
+            - 자동 집계: 총 매출, 총 실행비, 총 부가세, 총 순마진, <strong>총 계산서 발행 금액</strong><br>
+            - 결제 금액 우측에 계산서 발행 금액 표시<br>
             - 직원별 매출·순마진 비교<br>
             - 목표 대비 달성률 표시<br>
+            - 매출 등록일 / 작업 시작일 / 작업 종료일 기준으로 업체별 마감 일자 표시<br>
             - 기간 선택 필터<br>
             - 엑셀 다운로드 가능
           </td>
@@ -684,7 +701,9 @@
           </td>
           <td class="func-detail">
             - 조회 단위: 년 / 월 / 일<br>
-            - 표시: 본인 총 매출, 총 실행비, 총 부가세, 총 순마진<br>
+            - 표시: 본인 총 매출, 총 실행비, 총 부가세, 총 순마진, <strong>총 계산서 발행 금액</strong><br>
+            - 결제 금액 우측에 계산서 발행 금액 표시<br>
+            - 매출 등록일 / 작업 시작일 / 작업 종료일 기준으로 업체별 마감 일자 표시<br>
             - 월별 그래프 표시<br>
             - 목표 대비 달성률 표시<br>
             - 인센티브 기준 자동 계산 (옵션)<br>
@@ -775,7 +794,7 @@
           <td class="func-detail">
             - 선 그래프 + 막대 그래프<br>
             - 조회 단위: 일별 / 월별 / 년별<br>
-            - 표시 항목: 매출, 실행비, 부가세, 순마진<br>
+            - 표시 항목: 매출, 실행비, 부가세, 순마진, <strong>계산서 발행 금액</strong><br>
             - 관리자: 전체 / 직원: 본인만
           </td>
           <td><div class="confirm-box" onclick="this.classList.toggle('checked')"></div></td>

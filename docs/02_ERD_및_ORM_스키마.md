@@ -1,7 +1,7 @@
 # ERP + CRM 통합 시스템 ERD 및 ORM 스키마
 
-> **문서 버전**: v1.0
-> **작성일**: 2026-02-25
+> **문서 버전**: v1.1
+> **작성일**: 2026-03-05
 > **데이터베이스**: SQLite3
 > **ORM**: 순수 PHP 커스텀 ORM (Composer 미사용)
 
@@ -18,6 +18,7 @@ erDiagram
     users ||--o{ status_histories : "변경자"
     users ||--o{ activity_logs : "행위자"
     users ||--o{ upload_histories : "업로드자"
+    users ||--o| employee_incentives : "인센티브설정"
 
     companies ||--o{ memos : "업체메모"
     companies ||--|| company_details : "상세정보"
@@ -62,6 +63,9 @@ erDiagram
     company_details {
         INTEGER id PK "자동 증가"
         INTEGER company_id FK "업체 ID - UNIQUE 1:1"
+        TEXT sales_register_date "매출 등록일"
+        TEXT work_start_date "작업 시작일"
+        TEXT work_end_date "작업 종료일"
         TEXT contract_start "계약 시작일"
         TEXT contract_end "계약 종료일"
         TEXT business_name "업체명"
@@ -161,6 +165,14 @@ erDiagram
         TEXT created_at "처리일시"
     }
 
+    employee_incentives {
+        INTEGER id PK "자동 증가"
+        INTEGER user_id FK "직원 ID"
+        REAL incentive_rate "인센티브 비율(%)"
+        TEXT created_at "설정일시"
+        TEXT updated_at "수정일시"
+    }
+
     sales_targets {
         INTEGER id PK "자동 증가"
         INTEGER user_id FK "대상 직원(NULL=전체)"
@@ -257,6 +269,9 @@ END;
 |--------|------|----------|--------|------|
 | id | INTEGER | PK, AUTO INCREMENT | - | 상세 고유 ID |
 | company_id | INTEGER | FK → companies(id), UNIQUE | - | 업체 ID (1:1) |
+| sales_register_date | TEXT | NULL | NULL | 매출 등록일 |
+| work_start_date | TEXT | NULL | NULL | 작업 시작일 |
+| work_end_date | TEXT | NULL | NULL | 작업 종료일 |
 | contract_start | TEXT | NULL | NULL | 계약 시작일 |
 | contract_end | TEXT | NULL | NULL | 계약 종료일 |
 | business_name | TEXT | NULL | NULL | 업체명 |
@@ -498,6 +513,21 @@ CHECK(action IN ('assign', 'revoke'))
 
 ---
 
+### 2.12 employee_incentives (인센티브 설정)
+
+| 컬럼명 | 타입 | 제약조건 | 기본값 | 설명 |
+|--------|------|----------|--------|------|
+| id | INTEGER | PK, AUTO INCREMENT | - | 인센티브 고유 ID |
+| user_id | INTEGER | FK → users(id), NOT NULL, UNIQUE | - | 대상 직원 |
+| incentive_rate | REAL | NOT NULL | 0 | 인센티브 비율(%) |
+| created_at | TEXT | NOT NULL | CURRENT_TIMESTAMP | 설정일시 |
+| updated_at | TEXT | NOT NULL | CURRENT_TIMESTAMP | 수정일시 |
+
+**인덱스:**
+- `idx_incentives_user_id` UNIQUE ON (user_id)
+
+---
+
 ## 3. 관계 정의 (Relationships)
 
 ### 3.1 관계 매트릭스
@@ -521,6 +551,7 @@ CHECK(action IN ('assign', 'revoke'))
 | R15 | companies | companies(자기참조) | 1:N | carried_from_id | SET NULL |
 | R16 | users | sales_targets | 1:N | user_id | CASCADE |
 | R17 | users | db_assignments | 1:N | admin_user_id | RESTRICT |
+| R18 | users | employee_incentives | 1:1 | user_id | CASCADE |
 
 ---
 
@@ -610,6 +641,9 @@ END;
 CREATE TABLE IF NOT EXISTS company_details (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     company_id INTEGER NOT NULL UNIQUE REFERENCES companies(id) ON DELETE CASCADE,
+    sales_register_date TEXT,
+    work_start_date TEXT,
+    work_end_date TEXT,
     contract_start TEXT,
     contract_end TEXT,
     business_name TEXT,
@@ -782,6 +816,19 @@ CREATE TABLE IF NOT EXISTS sales_targets (
 );
 
 CREATE INDEX IF NOT EXISTS idx_targets_user_year ON sales_targets(user_id, year, month);
+
+-- ============================================
+-- 12. employee_incentives (인센티브 설정)
+-- ============================================
+CREATE TABLE IF NOT EXISTS employee_incentives (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+    incentive_rate REAL NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
+    updated_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_incentives_user_id ON employee_incentives(user_id);
 
 -- ============================================
 -- 초기 관리자 계정 (비밀번호: admin1234)
@@ -1083,6 +1130,7 @@ class User extends Model {
     public function salesSummary(string $startDate, string $endDate): array {
         $sql = "SELECT
                     COALESCE(SUM(payment_amount), 0) as total_sales,
+                    COALESCE(SUM(invoice_amount), 0) as total_invoice,
                     COALESCE(SUM(execution_cost), 0) as total_execution,
                     COALESCE(SUM(vat), 0) as total_vat,
                     COALESCE(SUM(net_margin), 0) as total_margin
@@ -1134,6 +1182,7 @@ class Company extends Model {
         $newCompany = new static();
         $copyFields = [
             'user_id', 'product_name', 'company_name',
+            'payment_amount', 'invoice_amount', 'execution_cost',
             'registrant_position'
         ];
         foreach ($copyFields as $field) {
@@ -1141,8 +1190,6 @@ class Company extends Model {
         }
         $newCompany->carried_from_id = $this->id;
         $newCompany->register_date = date('Y-m-d');
-        $newCompany->payment_amount = 0;
-        $newCompany->execution_cost = 0;
 
         foreach ($overrideData as $key => $value) {
             $newCompany->$key = $value;
@@ -1157,7 +1204,7 @@ class Company extends Model {
             $copyDetailFields = [
                 'business_name', 'ceo_name', 'phone', 'payment_type',
                 'business_number', 'work_keywords', 'work_content',
-                'email', 'naver_account'
+                'email', 'naver_account', 'detail_execution_cost'
             ];
             foreach ($copyDetailFields as $field) {
                 $newDetail->$field = $detail->$field;
@@ -1168,6 +1215,17 @@ class Company extends Model {
             $newDetail->save();
         }
 
+        // 메모도 복사
+        $memos = $this->memos();
+        foreach ($memos as $memo) {
+            $newMemo = new Memo();
+            $newMemo->target_type = 'company';
+            $newMemo->target_id = $newCompany->id;
+            $newMemo->user_id = $memo->user_id;
+            $newMemo->content = $memo->content;
+            $newMemo->save();
+        }
+
         return $newCompany;
     }
 
@@ -1175,6 +1233,7 @@ class Company extends Model {
     public static function salesAggregate(string $startDate, string $endDate, ?int $userId = null): array {
         $sql = "SELECT
                     COALESCE(SUM(payment_amount), 0) as total_sales,
+                    COALESCE(SUM(invoice_amount), 0) as total_invoice,
                     COALESCE(SUM(execution_cost), 0) as total_execution,
                     COALESCE(SUM(vat), 0) as total_vat,
                     COALESCE(SUM(net_margin), 0) as total_margin,
@@ -1224,7 +1283,8 @@ class Company extends Model {
 class CompanyDetail extends Model {
     protected static string $table = 'company_details';
     protected static array $fillable = [
-        'company_id', 'contract_start', 'contract_end',
+        'company_id', 'sales_register_date', 'work_start_date', 'work_end_date',
+        'contract_start', 'contract_end',
         'business_name', 'ceo_name', 'phone', 'payment_type',
         'business_number', 'work_keywords', 'work_content',
         'email', 'naver_account', 'detail_execution_cost'
