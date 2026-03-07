@@ -46,6 +46,12 @@
                escapeHtml(status) + '</span>';
     }
 
+    function detailRow(label, value, isMono) {
+        if (value === null || value === undefined || value === '') return '';
+        var cls = isMono ? 'font-medium text-gray-900 font-mono' : 'font-medium text-gray-900';
+        return '<div class="flex justify-between"><dt class="text-gray-500">' + escapeHtml(label) + '</dt><dd class="' + cls + '">' + escapeHtml(String(value)) + '</dd></div>';
+    }
+
     /* ======================================================================
        List Loading
        ====================================================================== */
@@ -81,7 +87,7 @@
     function renderTable(items) {
         const tbody = document.getElementById('shopping-tbody');
         if (!items || items.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="8" class="px-4 py-12 text-center text-gray-400 text-sm">데이터가 없습니다.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="9" class="px-4 py-12 text-center text-gray-400 text-sm">데이터가 없습니다.</td></tr>';
             return;
         }
 
@@ -99,17 +105,21 @@
                     'value="' + item.id + '" data-table="shopping-table">' +
                     '</td>';
 
-            // Company name
+            // Company name (상호명)
             html += '<td class="px-4 py-3 text-sm text-gray-700 max-w-[160px] truncate">' +
                     escapeHtml(item.company_name || '-') + '</td>';
 
-            // Contact name
+            // Representative (대표자)
             html += '<td class="px-4 py-3 text-sm text-gray-700">' +
-                    escapeHtml(item.contact_name || '-') + '</td>';
+                    escapeHtml(item.representative || '-') + '</td>';
 
-            // Phone
+            // Phone (연락처)
             html += '<td class="px-4 py-3 text-sm text-gray-700 font-mono">' +
                     escapeHtml(item.phone || '-') + '</td>';
+
+            // Keyword (키워드)
+            html += '<td class="px-4 py-3 text-sm text-gray-700 max-w-[120px] truncate">' +
+                    escapeHtml(item.keyword || '-') + '</td>';
 
             // Status badge
             html += '<td class="px-4 py-3 text-sm" onclick="event.stopPropagation()">' +
@@ -122,10 +132,6 @@
             // Created date
             html += '<td class="px-4 py-3 text-xs text-gray-500 whitespace-nowrap">' +
                     escapeHtml(item.created_at ? item.created_at.substring(0, 10) : '-') + '</td>';
-
-            // Last activity
-            html += '<td class="px-4 py-3 text-xs text-gray-500 whitespace-nowrap">' +
-                    escapeHtml(item.updated_at ? item.updated_at.substring(0, 16) : '-') + '</td>';
 
             html += '</tr>';
         });
@@ -447,22 +453,68 @@
         html += '<div class="p-4 border-b border-gray-100">';
         html += '<h4 class="text-xs font-semibold text-gray-500 uppercase mb-3">기본 정보</h4>';
         html += '<dl class="space-y-2 text-sm">';
-        html += '<div class="flex justify-between"><dt class="text-gray-500">상호명</dt><dd class="font-medium text-gray-900">' + escapeHtml(record.company_name || '-') + '</dd></div>';
-        html += '<div class="flex justify-between"><dt class="text-gray-500">담당자명</dt><dd class="font-medium text-gray-900">' + escapeHtml(record.contact_name || '-') + '</dd></div>';
-        html += '<div class="flex justify-between"><dt class="text-gray-500">연락처</dt><dd class="font-medium text-gray-900 font-mono">' + escapeHtml(record.phone || '-') + '</dd></div>';
-        html += '<div class="flex justify-between"><dt class="text-gray-500">배정직원</dt><dd class="font-medium text-gray-900">' + escapeHtml(record.user_name || '미배정') + '</dd></div>';
-        html += '<div class="flex justify-between"><dt class="text-gray-500">등록일</dt><dd class="text-gray-700">' + escapeHtml(record.created_at || '-') + '</dd></div>';
-
-        if (record.extra_field_1) {
-            html += '<div class="flex justify-between"><dt class="text-gray-500">기타1</dt><dd class="text-gray-700">' + escapeHtml(record.extra_field_1) + '</dd></div>';
-        }
-        if (record.extra_field_2) {
-            html += '<div class="flex justify-between"><dt class="text-gray-500">기타2</dt><dd class="text-gray-700">' + escapeHtml(record.extra_field_2) + '</dd></div>';
-        }
-        if (record.extra_field_3) {
-            html += '<div class="flex justify-between"><dt class="text-gray-500">기타3</dt><dd class="text-gray-700">' + escapeHtml(record.extra_field_3) + '</dd></div>';
-        }
+        html += detailRow('상호명', record.company_name);
+        html += detailRow('대표자', record.representative);
+        html += detailRow('연락처', record.phone, true);
+        html += detailRow('핸드폰번호', record.mobile_phone, true);
+        html += detailRow('이메일', record.email);
+        html += detailRow('사업자등록번호', record.business_number);
+        html += detailRow('배정직원', record.user_name || '미배정');
+        html += detailRow('등록일', record.created_at);
         html += '</dl></div>';
+
+        // Store info
+        html += '<div class="p-4 border-b border-gray-100">';
+        html += '<h4 class="text-xs font-semibold text-gray-500 uppercase mb-3">스토어 정보</h4>';
+        html += '<dl class="space-y-2 text-sm">';
+        html += detailRow('키워드', record.keyword);
+        html += detailRow('상품명', record.product_name);
+        html += detailRow('스토어명', record.store_name);
+        html += detailRow('스토어', record.store);
+        html += detailRow('등급', record.grade);
+        if (record.store_url) {
+            html += '<div class="flex justify-between"><dt class="text-gray-500">URL</dt><dd class="text-blue-600 truncate max-w-[200px]"><a href="' + escapeHtml(record.store_url) + '" target="_blank" rel="noopener">' + escapeHtml(record.store_url) + '</a></dd></div>';
+        }
+        html += detailRow('리뷰수', record.review_count);
+        html += detailRow('찜수', record.bookmark_count);
+        html += detailRow('서비스', record.service);
+        html += detailRow('스토어ID', record.store_id);
+        html += detailRow('스토어설명', record.store_description);
+        html += '</dl></div>';
+
+        // Additional info
+        var hasAdditional = record.address || record.ecommerce_number || record.is_overseas || record.page_number ||
+                            record.age_10s || record.gender_male || record.talktalk_url || record.notes;
+        if (hasAdditional) {
+            html += '<div class="p-4 border-b border-gray-100">';
+            html += '<h4 class="text-xs font-semibold text-gray-500 uppercase mb-3">추가 정보</h4>';
+            html += '<dl class="space-y-2 text-sm">';
+            html += detailRow('페이지', record.page_number);
+            html += detailRow('직구여부', record.is_overseas);
+            html += detailRow('사업장소재지', record.address);
+            html += detailRow('통신판매업번호', record.ecommerce_number);
+            if (record.talktalk_url) {
+                html += '<div class="flex justify-between"><dt class="text-gray-500">톡톡주소</dt><dd class="text-blue-600 truncate max-w-[200px]"><a href="' + escapeHtml(record.talktalk_url) + '" target="_blank" rel="noopener">' + escapeHtml(record.talktalk_url) + '</a></dd></div>';
+            }
+            // Age demographics
+            var ageStr = [
+                record.age_10s ? '10대:' + record.age_10s : '',
+                record.age_20s ? '20대:' + record.age_20s : '',
+                record.age_30s ? '30대:' + record.age_30s : '',
+                record.age_40s ? '40대:' + record.age_40s : '',
+                record.age_50s ? '50대:' + record.age_50s : '',
+                record.age_60s ? '60대:' + record.age_60s : '',
+            ].filter(Boolean).join(', ');
+            if (ageStr) html += detailRow('연령대', ageStr);
+            // Gender
+            var genderStr = [
+                record.gender_male ? '남:' + record.gender_male : '',
+                record.gender_female ? '여:' + record.gender_female : '',
+            ].filter(Boolean).join(', ');
+            if (genderStr) html += detailRow('성별', genderStr);
+            html += detailRow('비고', record.notes);
+            html += '</dl></div>';
+        }
 
         // Status change buttons
         html += '<div class="p-4 border-b border-gray-100">';

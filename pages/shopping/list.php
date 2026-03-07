@@ -136,10 +136,11 @@ require_once __DIR__ . '/../../templates/header.php';
                             <th class="px-4 py-3 text-xs font-semibold text-gray-600 cursor-pointer hover:text-gray-900" data-sort="s.company_name">
                                 상호명 <span class="sort-icon"></span>
                             </th>
-                            <th class="px-4 py-3 text-xs font-semibold text-gray-600 cursor-pointer hover:text-gray-900" data-sort="s.contact_name">
-                                담당자명 <span class="sort-icon"></span>
+                            <th class="px-4 py-3 text-xs font-semibold text-gray-600 cursor-pointer hover:text-gray-900" data-sort="s.representative">
+                                대표자 <span class="sort-icon"></span>
                             </th>
                             <th class="px-4 py-3 text-xs font-semibold text-gray-600">연락처</th>
+                            <th class="px-4 py-3 text-xs font-semibold text-gray-600">키워드</th>
                             <th class="px-4 py-3 text-xs font-semibold text-gray-600 cursor-pointer hover:text-gray-900" data-sort="s.status">
                                 상태 <span class="sort-icon"></span>
                             </th>
@@ -147,14 +148,11 @@ require_once __DIR__ . '/../../templates/header.php';
                             <th class="px-4 py-3 text-xs font-semibold text-gray-600 cursor-pointer hover:text-gray-900" data-sort="s.created_at">
                                 등록일 <span class="sort-icon"></span>
                             </th>
-                            <th class="px-4 py-3 text-xs font-semibold text-gray-600 cursor-pointer hover:text-gray-900" data-sort="s.updated_at">
-                                최근활동 <span class="sort-icon"></span>
-                            </th>
                         </tr>
                     </thead>
                     <tbody id="shopping-tbody" class="divide-y divide-gray-100">
                         <tr>
-                            <td colspan="8" class="px-4 py-12 text-center text-gray-400 text-sm">
+                            <td colspan="9" class="px-4 py-12 text-center text-gray-400 text-sm">
                                 데이터를 불러오는 중...
                             </td>
                         </tr>

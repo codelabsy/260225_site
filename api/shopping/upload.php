@@ -83,42 +83,107 @@ $db->execute(
 );
 $uploadHistoryId = (int)$db->lastInsertId();
 
-// Map CSV columns to DB fields
-// Expected columns: 상호명, 담당자명/이름, 연락처/전화번호, 기타1, 기타2, 기타3
+// Column name mapping: Korean Excel headers → DB field names
+$columnMap = [
+    '상호명'         => 'company_name',
+    '업체명'         => 'company_name',
+    'company_name'   => 'company_name',
+    '대표자'         => 'representative',
+    '담당자명'       => 'representative',
+    '이름'           => 'store_name',
+    'representative' => 'representative',
+    '연락처'         => 'phone',
+    '전화번호'       => 'phone',
+    'phone'          => 'phone',
+    '핸드폰번호'     => 'mobile_phone',
+    '휴대폰'         => 'mobile_phone',
+    'mobile_phone'   => 'mobile_phone',
+    '키워드'         => 'keyword',
+    '페이지'         => 'page_number',
+    '직구여부'       => 'is_overseas',
+    '상품명'         => 'product_name',
+    'url'            => 'store_url',
+    'URL'            => 'store_url',
+    '스토어'         => 'store',
+    '리뷰수'         => 'review_count',
+    '찜수'           => 'bookmark_count',
+    '등급'           => 'grade',
+    '서비스'         => 'service',
+    '스토어아이디'   => 'store_id',
+    '스토어설명'     => 'store_description',
+    '이메일'         => 'email',
+    'email'          => 'email',
+    '사업자등록번호'  => 'business_number',
+    '사업장소재지'    => 'address',
+    '주소'           => 'address',
+    '통신판매업번호'  => 'ecommerce_number',
+    '10대'           => 'age_10s',
+    '20대'           => 'age_20s',
+    '30대'           => 'age_30s',
+    '40대'           => 'age_40s',
+    '50대'           => 'age_50s',
+    '60대'           => 'age_60s',
+    '남자'           => 'gender_male',
+    '여자'           => 'gender_female',
+    '톡톡주소'       => 'talktalk_url',
+    '비고'           => 'notes',
+];
+
 $mappedRows = [];
 $duplicates = [];
 $seenPhones = [];
 
 foreach ($rows as $row) {
-    // Try common column name variations
-    $phone = $row['연락처'] ?? $row['전화번호'] ?? $row['phone'] ?? $row['휴대폰'] ?? '';
-    $phone = preg_replace('/[\s\-]/', '', trim($phone));
+    // Map Korean headers to DB field names
+    $mapped = [];
+    foreach ($row as $header => $value) {
+        $dbField = $columnMap[$header] ?? null;
+        if ($dbField !== null && $value !== '') {
+            $mapped[$dbField] = trim($value);
+        }
+    }
+
+    // Get phone (try phone first, then mobile_phone)
+    $phone = $mapped['phone'] ?? '';
+    $phone = preg_replace('/[\s\-]/', '', $phone);
+    $mobilePhone = $mapped['mobile_phone'] ?? '';
+    $mobilePhone = preg_replace('/[\s\-]/', '', $mobilePhone);
+
+    // Use mobile_phone as phone if phone is empty
+    if (empty($phone) && !empty($mobilePhone)) {
+        $phone = $mobilePhone;
+    }
 
     if (empty($phone)) {
         continue;
+    }
+
+    $mapped['phone'] = $phone;
+    if (!empty($mobilePhone)) {
+        $mapped['mobile_phone'] = $mobilePhone;
+    }
+
+    // Cast numeric fields
+    if (isset($mapped['review_count'])) {
+        $mapped['review_count'] = (int)$mapped['review_count'];
+    }
+    if (isset($mapped['bookmark_count'])) {
+        $mapped['bookmark_count'] = (int)$mapped['bookmark_count'];
     }
 
     // Check duplicate (DB + intra-batch)
     if (ShoppingDB::checkDuplicate($phone) || isset($seenPhones[$phone])) {
         $duplicates[] = [
             'phone' => $phone,
-            'company_name' => $row['상호명'] ?? $row['company_name'] ?? $row['업체명'] ?? '',
-            'contact_name' => $row['담당자명'] ?? $row['이름'] ?? $row['contact_name'] ?? $row['대표자'] ?? '',
+            'company_name' => $mapped['company_name'] ?? '',
+            'representative' => $mapped['representative'] ?? '',
         ];
         continue;
     }
 
     $seenPhones[$phone] = true;
-
-    $mappedRows[] = [
-        'phone' => $phone,
-        'company_name' => $row['상호명'] ?? $row['company_name'] ?? $row['업체명'] ?? '',
-        'contact_name' => $row['담당자명'] ?? $row['이름'] ?? $row['contact_name'] ?? $row['대표자'] ?? '',
-        'extra_field_1' => $row['기타1'] ?? $row['extra_field_1'] ?? $row['비고'] ?? null,
-        'extra_field_2' => $row['기타2'] ?? $row['extra_field_2'] ?? $row['주소'] ?? null,
-        'extra_field_3' => $row['기타3'] ?? $row['extra_field_3'] ?? $row['업종'] ?? null,
-        'upload_history_id' => $uploadHistoryId,
-    ];
+    $mapped['upload_history_id'] = $uploadHistoryId;
+    $mappedRows[] = $mapped;
 }
 
 // Bulk insert
@@ -127,21 +192,7 @@ if (!empty($mappedRows)) {
     $db->beginTransaction();
     try {
         foreach ($mappedRows as $mRow) {
-            $db->execute(
-                'INSERT INTO shopping_db (user_id, company_name, contact_name, phone, status, upload_history_id, extra_field_1, extra_field_2, extra_field_3)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                [
-                    null,
-                    $mRow['company_name'],
-                    $mRow['contact_name'],
-                    $mRow['phone'],
-                    SHOPPING_DEFAULT_STATUS,
-                    $uploadHistoryId,
-                    $mRow['extra_field_1'],
-                    $mRow['extra_field_2'],
-                    $mRow['extra_field_3'],
-                ]
-            );
+            ShoppingDB::create($mRow);
             $successCount++;
         }
 

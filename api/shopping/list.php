@@ -107,7 +107,8 @@ if ($periodEnd !== '') {
 }
 if ($search !== '') {
     $searchParam = '%' . $search . '%';
-    $countWhere[] = '(s.company_name LIKE ? OR s.contact_name LIKE ? OR s.phone LIKE ?)';
+    $countWhere[] = '(s.company_name LIKE ? OR s.representative LIKE ? OR s.phone LIKE ? OR s.store_name LIKE ?)';
+    $countParams[] = $searchParam;
     $countParams[] = $searchParam;
     $countParams[] = $searchParam;
     $countParams[] = $searchParam;
@@ -146,7 +147,8 @@ if ($periodEnd !== '') {
 }
 if ($search !== '') {
     $searchParam = '%' . $search . '%';
-    $statusCountWhere[] = '(s.company_name LIKE ? OR s.contact_name LIKE ? OR s.phone LIKE ?)';
+    $statusCountWhere[] = '(s.company_name LIKE ? OR s.representative LIKE ? OR s.phone LIKE ? OR s.store_name LIKE ?)';
+    $statusCountParams[] = $searchParam;
     $statusCountParams[] = $searchParam;
     $statusCountParams[] = $searchParam;
     $statusCountParams[] = $searchParam;

@@ -105,15 +105,21 @@ switch ($type) {
 
         $rows = ShoppingDB::all($filters);
 
-        $headers = ['ID', '담당자', '업체명', '담당자명', '전화번호', '상태', '등록일', '수정일'];
+        $headers = ['ID', '배정직원', '키워드', '상호명', '대표자', '연락처', '핸드폰번호', '이메일', '사업자등록번호', '스토어명', '등급', '상태', '등록일', '수정일'];
         $data = [];
         foreach ($rows as $row) {
             $data[] = [
                 'ID' => $row['id'],
-                '담당자' => $row['user_name'] ?? '',
-                '업체명' => $row['company_name'] ?? '',
-                '담당자명' => $row['contact_name'] ?? '',
-                '전화번호' => $row['phone'] ?? '',
+                '배정직원' => $row['user_name'] ?? '',
+                '키워드' => $row['keyword'] ?? '',
+                '상호명' => $row['company_name'] ?? '',
+                '대표자' => $row['representative'] ?? '',
+                '연락처' => $row['phone'] ?? '',
+                '핸드폰번호' => $row['mobile_phone'] ?? '',
+                '이메일' => $row['email'] ?? '',
+                '사업자등록번호' => $row['business_number'] ?? '',
+                '스토어명' => $row['store_name'] ?? '',
+                '등급' => $row['grade'] ?? '',
                 '상태' => $row['status'] ?? '',
                 '등록일' => $row['created_at'] ?? '',
                 '수정일' => $row['updated_at'] ?? '',

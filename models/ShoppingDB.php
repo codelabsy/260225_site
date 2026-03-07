@@ -34,23 +34,50 @@ class ShoppingDB
     /**
      * Create a new record.
      */
+    /** All allowed insert/update fields */
+    private static array $allFields = [
+        'user_id', 'company_name', 'representative', 'phone', 'mobile_phone',
+        'status', 'upload_history_id',
+        'keyword', 'page_number', 'is_overseas', 'product_name', 'store_url',
+        'store_name', 'store', 'review_count', 'bookmark_count', 'grade',
+        'service', 'store_id', 'store_description', 'email', 'business_number',
+        'address', 'ecommerce_number',
+        'age_10s', 'age_20s', 'age_30s', 'age_40s', 'age_50s', 'age_60s',
+        'gender_male', 'gender_female', 'talktalk_url', 'notes',
+    ];
+
     public static function create(array $data): int
     {
         $db = Database::getInstance();
+        $fields = [];
+        $placeholders = [];
+        $values = [];
+
+        foreach (self::$allFields as $field) {
+            if (array_key_exists($field, $data)) {
+                $fields[] = $field;
+                $placeholders[] = '?';
+                $values[] = $data[$field];
+            }
+        }
+
+        // phone is required
+        if (!in_array('phone', $fields)) {
+            $fields[] = 'phone';
+            $placeholders[] = '?';
+            $values[] = $data['phone'] ?? '';
+        }
+
+        // default status
+        if (!in_array('status', $fields)) {
+            $fields[] = 'status';
+            $placeholders[] = '?';
+            $values[] = $data['status'] ?? SHOPPING_DEFAULT_STATUS;
+        }
+
         $db->execute(
-            'INSERT INTO shopping_db (user_id, company_name, contact_name, phone, status, upload_history_id, extra_field_1, extra_field_2, extra_field_3)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-            [
-                $data['user_id'] ?? null,
-                $data['company_name'] ?? null,
-                $data['contact_name'] ?? null,
-                $data['phone'],
-                $data['status'] ?? SHOPPING_DEFAULT_STATUS,
-                $data['upload_history_id'] ?? null,
-                $data['extra_field_1'] ?? null,
-                $data['extra_field_2'] ?? null,
-                $data['extra_field_3'] ?? null,
-            ]
+            'INSERT INTO shopping_db (' . implode(', ', $fields) . ') VALUES (' . implode(', ', $placeholders) . ')',
+            $values
         );
         return (int) $db->lastInsertId();
     }
@@ -64,7 +91,7 @@ class ShoppingDB
         $fields = [];
         $params = [];
 
-        $allowed = ['company_name', 'contact_name', 'phone', 'extra_field_1', 'extra_field_2', 'extra_field_3'];
+        $allowed = array_diff(self::$allFields, ['user_id', 'status', 'upload_history_id']);
         foreach ($allowed as $field) {
             if (array_key_exists($field, $data)) {
                 $fields[] = "$field = ?";
@@ -236,21 +263,11 @@ class ShoppingDB
                     continue;
                 }
 
-                $db->execute(
-                    'INSERT INTO shopping_db (user_id, company_name, contact_name, phone, status, upload_history_id, extra_field_1, extra_field_2, extra_field_3)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                    [
-                        $row['user_id'] ?? $userId,
-                        $row['company_name'] ?? null,
-                        $row['contact_name'] ?? null,
-                        $phone,
-                        SHOPPING_DEFAULT_STATUS,
-                        $uploadHistoryId,
-                        $row['extra_field_1'] ?? null,
-                        $row['extra_field_2'] ?? null,
-                        $row['extra_field_3'] ?? null,
-                    ]
-                );
+                $row['upload_history_id'] = $uploadHistoryId;
+                if (!isset($row['status'])) {
+                    $row['status'] = SHOPPING_DEFAULT_STATUS;
+                }
+                self::create($row);
                 $successCount++;
             }
 
@@ -304,7 +321,8 @@ class ShoppingDB
 
         if (!empty($filters['search'])) {
             $search = '%' . $filters['search'] . '%';
-            $where[] = '(s.company_name LIKE ? OR s.contact_name LIKE ? OR s.phone LIKE ?)';
+            $where[] = '(s.company_name LIKE ? OR s.representative LIKE ? OR s.phone LIKE ? OR s.store_name LIKE ?)';
+            $params[] = $search;
             $params[] = $search;
             $params[] = $search;
             $params[] = $search;
@@ -341,7 +359,7 @@ class ShoppingDB
 
         // Sorting
         $sortColumn = $filters['sort'] ?? 's.created_at';
-        $allowedSorts = ['s.created_at', 's.company_name', 's.contact_name', 's.phone', 's.status', 's.updated_at'];
+        $allowedSorts = ['s.created_at', 's.company_name', 's.representative', 's.phone', 's.status', 's.updated_at'];
         if (!in_array($sortColumn, $allowedSorts)) {
             $sortColumn = 's.created_at';
         }
