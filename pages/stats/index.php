@@ -125,7 +125,9 @@ require_once __DIR__ . '/../../templates/header.php';
                 <h3>쇼핑DB 상태 분포</h3>
             </div>
             <div class="card-body">
-                <canvas id="chart-status-shopping-stats" height="260"></canvas>
+                <div class="max-h-[260px]">
+                    <canvas id="chart-status-shopping-stats"></canvas>
+                </div>
                 <div id="status-shopping-legend" class="mt-4 space-y-2"></div>
             </div>
         </div>
@@ -136,7 +138,9 @@ require_once __DIR__ . '/../../templates/header.php';
                 <h3>플레이스DB 상태 분포</h3>
             </div>
             <div class="card-body">
-                <canvas id="chart-status-place-stats" height="260"></canvas>
+                <div class="max-h-[260px]">
+                    <canvas id="chart-status-place-stats"></canvas>
+                </div>
                 <div id="status-place-legend" class="mt-4 space-y-2"></div>
             </div>
         </div>
@@ -147,7 +151,9 @@ require_once __DIR__ . '/../../templates/header.php';
                 <h3>통합 상태 분포</h3>
             </div>
             <div class="card-body">
-                <canvas id="chart-status-combined" height="260"></canvas>
+                <div class="max-h-[260px]">
+                    <canvas id="chart-status-combined"></canvas>
+                </div>
                 <div id="status-combined-legend" class="mt-4 space-y-2"></div>
             </div>
         </div>
