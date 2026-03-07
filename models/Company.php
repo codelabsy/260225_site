@@ -200,6 +200,18 @@ class Company
                 ]
             );
 
+            // Copy memos (FR-ERP-005: 메모도 이월 대상)
+            $memos = $db->fetchAll(
+                'SELECT user_id, content FROM memos WHERE target_type = ? AND target_id = ? ORDER BY id ASC',
+                [TARGET_COMPANY, $id]
+            );
+            foreach ($memos as $memo) {
+                $db->execute(
+                    'INSERT INTO memos (target_type, target_id, user_id, content) VALUES (?, ?, ?, ?)',
+                    [TARGET_COMPANY, $newId, $memo['user_id'], $memo['content']]
+                );
+            }
+
             $db->commit();
             return $newId;
         } catch (Exception $e) {
