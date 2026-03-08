@@ -299,13 +299,23 @@ foreach ($agents as $a) {
     $vat = round($paymentAmt / 11, 0);
     $netMargin = $paymentAmt - $executionCost - $vat;
 
-    // Register date
-    $registerDate = $a['contract_date'] ?? $a['created_at'] ?? date('Y-m-d');
-    if (strlen($registerDate) > 10) {
-        $registerDate = substr($registerDate, 0, 10);
+    // Register date - validate as actual date format
+    $registerDate = $a['contract_date'] ?? '';
+    // Only accept YYYY-MM-DD or YYYY-M-D patterns
+    if (preg_match('/^(\d{4})-(\d{1,2})-(\d{1,2})/', $registerDate, $m)) {
+        $registerDate = sprintf('%04d-%02d-%02d', $m[1], $m[2], $m[3]);
+    } else {
+        // Fallback to created_at
+        $registerDate = $a['created_at'] ?? date('Y-m-d H:i:s');
+        if (preg_match('/^(\d{4}-\d{2}-\d{2})/', $registerDate, $m)) {
+            $registerDate = $m[1];
+        } else {
+            $registerDate = date('Y-m-d');
+        }
     }
     if ($registerDate === '0000-00-00') {
-        $registerDate = substr($a['created_at'] ?? date('Y-m-d H:i:s'), 0, 10);
+        $ca = $a['created_at'] ?? date('Y-m-d H:i:s');
+        $registerDate = preg_match('/^(\d{4}-\d{2}-\d{2})/', $ca, $m) ? $m[1] : date('Y-m-d');
     }
 
     // Resolve level to position

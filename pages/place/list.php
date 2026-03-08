@@ -4,8 +4,12 @@
  * Left: Filters | Center: Table | Right: Detail panel
  */
 
+require_once __DIR__ . '/../../core/Auth.php';
+require_once __DIR__ . '/../../core/Permission.php';
 require_once __DIR__ . '/../../models/User.php';
 require_once __DIR__ . '/../../models/PlaceDB.php';
+
+Permission::requireLogin();
 
 $currentUser = Auth::user();
 $isAdmin = Auth::isAdmin();

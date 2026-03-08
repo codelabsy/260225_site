@@ -4,6 +4,11 @@
  * Tabs: Sales, Status (admin), Employee (admin)
  */
 
+require_once __DIR__ . '/../../core/Auth.php';
+require_once __DIR__ . '/../../core/Permission.php';
+
+Permission::requireLogin();
+
 $user = Auth::user();
 $isAdmin = Auth::isAdmin();
 
