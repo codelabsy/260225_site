@@ -58,27 +58,32 @@ class Company
             $companyId = (int) $db->lastInsertId();
 
             // Insert company details
+            $detailFields = [
+                'company_id', 'sales_register_date', 'work_start_date', 'work_end_date',
+                'contract_start', 'contract_end', 'contract_term', 'business_name', 'ceo_name',
+                'phone', 'payment_type', 'business_number', 'work_keywords', 'work_content',
+                'email', 'naver_account', 'detail_execution_cost', 'outsourcing_cost', 'keyword_cost',
+                'pg_name', 'tax_type', 'bank', 'card_number', 'card_owner', 'card_owner_birth',
+                'card_validity', 'card_installment', 'making_type', 'making_bigo', 'vpn_id',
+                'blog_id', 'blog_pass', 'naver_ad_id', 'naver_ad_pass', 'daum_ad_id', 'daum_ad_pass',
+                'target_url', 'making_url', 'created_level', 'updated_by', 'updated_level', 'old_system_id',
+            ];
+            $detailValues = [$companyId];
+            foreach (array_slice($detailFields, 1) as $f) {
+                $detailValues[] = $data[$f] ?? null;
+            }
+            // Set numeric defaults
+            foreach (['detail_execution_cost', 'outsourcing_cost', 'keyword_cost'] as $numField) {
+                $idx = array_search($numField, $detailFields);
+                if ($idx !== false && $detailValues[$idx] === null) {
+                    $detailValues[$idx] = 0;
+                }
+            }
+            $placeholders = implode(', ', array_fill(0, count($detailFields), '?'));
+            $fieldList = implode(', ', $detailFields);
             $db->execute(
-                'INSERT INTO company_details (company_id, sales_register_date, work_start_date, work_end_date, contract_start, contract_end, business_name, ceo_name, phone, payment_type, business_number, work_keywords, work_content, email, naver_account, detail_execution_cost)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                [
-                    $companyId,
-                    $data['sales_register_date'] ?? null,
-                    $data['work_start_date'] ?? null,
-                    $data['work_end_date'] ?? null,
-                    $data['contract_start'] ?? null,
-                    $data['contract_end'] ?? null,
-                    $data['business_name'] ?? null,
-                    $data['ceo_name'] ?? null,
-                    $data['phone'] ?? null,
-                    $data['payment_type'] ?? null,
-                    $data['business_number'] ?? null,
-                    $data['work_keywords'] ?? null,
-                    $data['work_content'] ?? null,
-                    $data['email'] ?? null,
-                    $data['naver_account'] ?? null,
-                    $data['detail_execution_cost'] ?? 0,
-                ]
+                "INSERT INTO company_details ($fieldList) VALUES ($placeholders)",
+                $detailValues
             );
 
             $db->commit();
@@ -122,7 +127,15 @@ class Company
             // Update company_details table
             $detailFields = [];
             $detailParams = [];
-            $allowedDetail = ['sales_register_date', 'work_start_date', 'work_end_date', 'contract_start', 'contract_end', 'business_name', 'ceo_name', 'phone', 'payment_type', 'business_number', 'work_keywords', 'work_content', 'email', 'naver_account', 'detail_execution_cost'];
+            $allowedDetail = [
+                'sales_register_date', 'work_start_date', 'work_end_date', 'contract_start', 'contract_end',
+                'contract_term', 'business_name', 'ceo_name', 'phone', 'payment_type', 'business_number',
+                'work_keywords', 'work_content', 'email', 'naver_account', 'detail_execution_cost',
+                'outsourcing_cost', 'keyword_cost', 'pg_name', 'tax_type', 'bank', 'card_number',
+                'card_owner', 'card_owner_birth', 'card_validity', 'card_installment', 'making_type',
+                'making_bigo', 'vpn_id', 'blog_id', 'blog_pass', 'naver_ad_id', 'naver_ad_pass',
+                'daum_ad_id', 'daum_ad_pass', 'target_url', 'making_url',
+            ];
 
             foreach ($allowedDetail as $field) {
                 if (array_key_exists($field, $data)) {
@@ -179,25 +192,24 @@ class Company
             $newId = (int) $db->lastInsertId();
 
             // Copy details with reset contract period
+            $carryFields = [
+                'sales_register_date', 'work_start_date', 'work_end_date', 'contract_term',
+                'business_name', 'ceo_name', 'phone', 'payment_type', 'business_number',
+                'work_keywords', 'work_content', 'email', 'naver_account', 'detail_execution_cost',
+                'outsourcing_cost', 'keyword_cost', 'pg_name', 'tax_type', 'bank',
+                'card_number', 'card_owner', 'card_owner_birth', 'card_validity', 'card_installment',
+                'making_type', 'making_bigo', 'vpn_id', 'blog_id', 'blog_pass',
+                'naver_ad_id', 'naver_ad_pass', 'daum_ad_id', 'daum_ad_pass', 'target_url', 'making_url',
+            ];
+            $carryValues = [$newId, null, null]; // company_id, contract_start=NULL, contract_end=NULL
+            foreach ($carryFields as $f) {
+                $carryValues[] = $original[$f] ?? null;
+            }
+            $carryFieldList = 'company_id, contract_start, contract_end, ' . implode(', ', $carryFields);
+            $carryPlaceholders = implode(', ', array_fill(0, count($carryValues), '?'));
             $db->execute(
-                'INSERT INTO company_details (company_id, sales_register_date, work_start_date, work_end_date, contract_start, contract_end, business_name, ceo_name, phone, payment_type, business_number, work_keywords, work_content, email, naver_account, detail_execution_cost)
-                 VALUES (?, ?, ?, ?, NULL, NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                [
-                    $newId,
-                    $original['sales_register_date'] ?? null,
-                    $original['work_start_date'] ?? null,
-                    $original['work_end_date'] ?? null,
-                    $original['business_name'] ?? null,
-                    $original['ceo_name'] ?? null,
-                    $original['phone'] ?? null,
-                    $original['payment_type'] ?? null,
-                    $original['business_number'] ?? null,
-                    $original['work_keywords'] ?? null,
-                    $original['work_content'] ?? null,
-                    $original['email'] ?? null,
-                    $original['naver_account'] ?? null,
-                    $original['detail_execution_cost'] ?? 0,
-                ]
+                "INSERT INTO company_details ($carryFieldList) VALUES ($carryPlaceholders)",
+                $carryValues
             );
 
             // Copy memos (FR-ERP-005: 메모도 이월 대상)

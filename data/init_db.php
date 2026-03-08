@@ -29,7 +29,22 @@ CREATE TABLE IF NOT EXISTS users (
     role TEXT NOT NULL DEFAULT 'EMPLOYEE' CHECK(role IN ('ADMIN', 'EMPLOYEE')),
     position TEXT,
     phone TEXT,
+    mobile_phone TEXT,
     email TEXT,
+    user_type TEXT,
+    base_salary REAL DEFAULT 0,
+    memo TEXT,
+    delete_auth INTEGER DEFAULT 0,
+    modify_auth INTEGER DEFAULT 0,
+    move_auth INTEGER DEFAULT 0,
+    agent_id INTEGER,
+    team_id INTEGER,
+    division TEXT,
+    msn TEXT,
+    include_check INTEGER DEFAULT 0,
+    login_count INTEGER DEFAULT 0,
+    last_login TEXT,
+    old_system_id INTEGER,
     is_active INTEGER NOT NULL DEFAULT 1 CHECK(is_active IN (0, 1)),
     created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
     updated_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
@@ -50,6 +65,7 @@ CREATE TABLE IF NOT EXISTS companies (
     net_margin REAL NOT NULL DEFAULT 0,
     registrant_position TEXT,
     carried_from_id INTEGER REFERENCES companies(id) ON DELETE SET NULL,
+    old_system_id INTEGER,
     is_active INTEGER NOT NULL DEFAULT 1,
     created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
     updated_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
@@ -65,6 +81,7 @@ CREATE TABLE IF NOT EXISTS company_details (
     work_end_date TEXT,
     contract_start TEXT,
     contract_end TEXT,
+    contract_term TEXT,
     business_name TEXT,
     ceo_name TEXT,
     phone TEXT,
@@ -75,6 +92,31 @@ CREATE TABLE IF NOT EXISTS company_details (
     email TEXT,
     naver_account TEXT,
     detail_execution_cost REAL DEFAULT 0,
+    outsourcing_cost REAL DEFAULT 0,
+    keyword_cost REAL DEFAULT 0,
+    pg_name TEXT,
+    tax_type TEXT,
+    bank TEXT,
+    card_number TEXT,
+    card_owner TEXT,
+    card_owner_birth TEXT,
+    card_validity TEXT,
+    card_installment TEXT,
+    making_type TEXT,
+    making_bigo TEXT,
+    vpn_id TEXT,
+    blog_id TEXT,
+    blog_pass TEXT,
+    naver_ad_id TEXT,
+    naver_ad_pass TEXT,
+    daum_ad_id TEXT,
+    daum_ad_pass TEXT,
+    target_url TEXT,
+    making_url TEXT,
+    created_level TEXT,
+    updated_by INTEGER,
+    updated_level TEXT,
+    old_system_id INTEGER,
     created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
     updated_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
 )
@@ -144,8 +186,12 @@ CREATE TABLE IF NOT EXISTS place_db (
     region TEXT,
     register_date TEXT NOT NULL,
     source TEXT,
-    status TEXT NOT NULL DEFAULT '부재' CHECK(status IN ('부재', '재통', '가망', '거절', '계약완료')),
+    status TEXT NOT NULL DEFAULT '일반' CHECK(status IN ('일반', '부재', '재통', '가망', '거절', '계약완료')),
     initial_memo TEXT,
+    request_content TEXT,
+    contract_date TEXT,
+    payment_amount REAL DEFAULT 0,
+    old_system_id INTEGER,
     created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
     updated_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
 )
@@ -158,6 +204,8 @@ CREATE TABLE IF NOT EXISTS memos (
     target_id INTEGER NOT NULL,
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
     content TEXT NOT NULL,
+    is_visible INTEGER NOT NULL DEFAULT 1,
+    old_system_id INTEGER,
     created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
 )
 ");
@@ -198,6 +246,30 @@ CREATE TABLE IF NOT EXISTS db_assignments (
     to_user_id INTEGER REFERENCES users(id),
     action TEXT NOT NULL CHECK(action IN ('assign', 'revoke')),
     admin_user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
+)
+");
+
+$pdo->exec("
+CREATE TABLE IF NOT EXISTS attendance (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    attendance_date TEXT NOT NULL,
+    check_in TEXT,
+    check_out TEXT,
+    old_system_id INTEGER,
+    created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
+)
+");
+
+$pdo->exec("
+CREATE TABLE IF NOT EXISTS login_logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    login_id TEXT,
+    login_type TEXT,
+    login_ip TEXT,
+    old_system_id INTEGER,
     created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
 )
 ");
@@ -291,6 +363,20 @@ $indexes = [
 
     // sales_targets
     'CREATE UNIQUE INDEX IF NOT EXISTS idx_targets_user_year ON sales_targets(user_id, year, month)',
+
+    // attendance
+    'CREATE INDEX IF NOT EXISTS idx_attendance_user_id ON attendance(user_id)',
+    'CREATE INDEX IF NOT EXISTS idx_attendance_date ON attendance(attendance_date)',
+
+    // login_logs
+    'CREATE INDEX IF NOT EXISTS idx_login_logs_user_id ON login_logs(user_id)',
+    'CREATE INDEX IF NOT EXISTS idx_login_logs_created_at ON login_logs(created_at)',
+
+    // old_system_id tracking
+    'CREATE INDEX IF NOT EXISTS idx_users_old_id ON users(old_system_id)',
+    'CREATE INDEX IF NOT EXISTS idx_companies_old_id ON companies(old_system_id)',
+    'CREATE INDEX IF NOT EXISTS idx_company_details_old_id ON company_details(old_system_id)',
+    'CREATE INDEX IF NOT EXISTS idx_place_old_id ON place_db(old_system_id)',
 ];
 
 foreach ($indexes as $sql) {

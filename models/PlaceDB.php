@@ -38,8 +38,8 @@ class PlaceDB
     {
         $db = Database::getInstance();
         $db->execute(
-            'INSERT INTO place_db (user_id, company_name, phone, region, register_date, source, status, initial_memo)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+            'INSERT INTO place_db (user_id, company_name, phone, region, register_date, source, status, initial_memo, request_content, contract_date, payment_amount, old_system_id)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
             [
                 $data['user_id'] ?? null,
                 $data['company_name'],
@@ -49,6 +49,10 @@ class PlaceDB
                 $data['source'] ?? null,
                 $data['status'] ?? PLACE_DEFAULT_STATUS,
                 $data['initial_memo'] ?? null,
+                $data['request_content'] ?? null,
+                $data['contract_date'] ?? null,
+                $data['payment_amount'] ?? 0,
+                $data['old_system_id'] ?? null,
             ]
         );
         return (int) $db->lastInsertId();
@@ -63,7 +67,7 @@ class PlaceDB
         $fields = [];
         $params = [];
 
-        $allowed = ['company_name', 'phone', 'region', 'register_date', 'source', 'initial_memo'];
+        $allowed = ['company_name', 'phone', 'region', 'register_date', 'source', 'initial_memo', 'request_content', 'contract_date', 'payment_amount'];
         foreach ($allowed as $field) {
             if (array_key_exists($field, $data)) {
                 $fields[] = "$field = ?";
