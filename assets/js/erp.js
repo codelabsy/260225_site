@@ -259,7 +259,8 @@
         html += amountCard('계산서발행', company.invoice_amount, 'text-blue-600');
         html += amountCard('실행비', company.execution_cost, 'text-orange-600');
         html += amountCard('상세실행비', company.detail_execution_cost, 'text-orange-500');
-        html += amountCard('부가세', company.vat, 'text-purple-600');
+        var vatLabel = '부가세' + (parseInt(company.vat_included) ? '' : ' <span class="text-xs text-gray-400">(미적용)</span>');
+        html += amountCard(vatLabel, company.vat, 'text-purple-600', true);
         html += amountCard('순마진', company.net_margin, netMarginClass);
         html += '</div>';
         html += '</div>';
@@ -335,9 +336,9 @@
             '</div>';
     }
 
-    function amountCard(label, value, colorClass) {
+    function amountCard(label, value, colorClass, rawLabel) {
         return '<div class="bg-white border border-gray-200 rounded-lg p-3">' +
-            '<div class="text-xs text-gray-500 mb-1">' + escapeHtml(label) + '</div>' +
+            '<div class="text-xs text-gray-500 mb-1">' + (rawLabel ? label : escapeHtml(label)) + '</div>' +
             '<div class="text-sm font-bold ' + colorClass + '">' + formatNumber(value) + '</div>' +
             '</div>';
     }
@@ -436,6 +437,16 @@
         html += formField('결제금액', 'number', 'edit-payment-amount', company.payment_amount);
         html += formField('계산서발행금액', 'number', 'edit-invoice-amount', company.invoice_amount);
         html += formField('실행비', 'number', 'edit-execution-cost', company.execution_cost);
+        html += '<div>';
+        html += '<label class="form-label text-xs">부가세 적용</label>';
+        html += '<div class="flex items-center gap-2 mt-1">';
+        html += '<label class="relative inline-flex items-center cursor-pointer">';
+        html += '<input type="checkbox" id="edit-vat-included" class="sr-only peer"' + (parseInt(company.vat_included) !== 0 ? ' checked' : '') + '>';
+        html += '<div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[\'\'] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>';
+        html += '</label>';
+        html += '<span class="text-xs text-gray-500" id="vat-label">' + (parseInt(company.vat_included) !== 0 ? '적용' : '미적용') + '</span>';
+        html += '</div>';
+        html += '</div>';
         html += formField('직위', 'text', 'edit-registrant-position', company.registrant_position);
         html += '</div>';
 
@@ -468,6 +479,15 @@
 
         html += '</form>';
         content.innerHTML = html;
+
+        // Toggle label update
+        var vatCheckbox = document.getElementById('edit-vat-included');
+        if (vatCheckbox) {
+            vatCheckbox.addEventListener('change', function () {
+                var label = document.getElementById('vat-label');
+                if (label) label.textContent = this.checked ? '적용' : '미적용';
+            });
+        }
     }
 
     function formField(label, type, id, value, options) {
@@ -529,6 +549,7 @@
             work_keywords: getVal('edit-work-keywords'),
             work_content: getVal('edit-work-content'),
             detail_execution_cost: parseAmount(getVal('edit-detail-execution-cost')),
+            vat_included: document.getElementById('edit-vat-included').checked ? 1 : 0,
         };
 
         apiRequest('/api/erp/update.php', 'POST', data)
@@ -575,6 +596,32 @@
     };
 
     /* ======================================================================
+       Delete
+       ====================================================================== */
+
+    ERP.deleteCompany = function () {
+        if (!currentDetailId) return;
+
+        confirmAction('이 업체를 삭제하시겠습니까?\n삭제된 업체는 목록에서 제외됩니다.').then(function (confirmed) {
+            if (!confirmed) return;
+
+            apiRequest('/api/erp/delete.php', 'POST', {
+                id: currentDetailId
+            }).then(function (res) {
+                if (res.success) {
+                    showToast('업체가 삭제되었습니다.', 'success');
+                    ERP.closeDetail();
+                    ERP.loadList();
+                } else {
+                    showToast(res.message || '삭제에 실패했습니다.', 'error');
+                }
+            }).catch(function () {
+                showToast('삭제 중 오류가 발생했습니다.', 'error');
+            });
+        });
+    };
+
+    /* ======================================================================
        Create Form
        ====================================================================== */
 
@@ -605,6 +652,7 @@
             work_keywords: getVal('field-work-keywords'),
             work_content: getVal('field-work-content'),
             detail_execution_cost: parseAmount(getVal('field-detail-execution-cost')),
+            vat_included: document.getElementById('field-vat-included') && document.getElementById('field-vat-included').checked ? 1 : 0,
         };
 
         // Validate required
@@ -620,7 +668,7 @@
                 if (res.success) {
                     showToast('업체가 등록되었습니다.', 'success');
                     setTimeout(function () {
-                        window.location.href = '/erp.php';
+                        window.location.href = (window.BASE_URL || '') + '/erp.php';
                     }, 1000);
                 } else {
                     showToast(res.message || '등록에 실패했습니다.', 'error');
@@ -649,11 +697,17 @@
 
         var payment = parseAmount(paymentEl.value);
         var execution = parseAmount(executionEl ? executionEl.value : '0');
-        var vat = Math.round(payment / 11);
+        var vatIncludedEl = document.getElementById('field-vat-included');
+        var vatIncluded = vatIncludedEl ? vatIncludedEl.checked : true;
+        var vat = vatIncluded ? Math.round(execution / 11) : 0;
+        var invoice = vatIncluded ? payment - Math.round(payment / 11) : payment;
         var margin = payment - execution - vat;
 
         vatEl.textContent = formatNumber(vat);
         marginEl.textContent = formatNumber(margin);
+
+        var invoiceEl = document.getElementById('field-invoice-amount');
+        if (invoiceEl) invoiceEl.value = formatNumber(invoice);
 
         if (margin >= 0) {
             marginEl.className = 'text-lg font-bold text-green-600';

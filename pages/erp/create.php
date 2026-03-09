@@ -25,7 +25,7 @@ include __DIR__ . '/../../templates/header.php';
     <!-- Page Header -->
     <div class="flex items-center justify-between mb-6">
         <div class="flex items-center gap-3">
-            <a href="/erp.php" class="btn btn-ghost btn-icon">
+            <a href="<?= BASE_URL ?>/erp.php" class="btn btn-ghost btn-icon">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
             </a>
             <h1 class="text-xl font-bold text-gray-900">업체 등록</h1>
@@ -70,11 +70,21 @@ include __DIR__ . '/../../templates/header.php';
                     </div>
                     <div class="form-group">
                         <label class="form-label">계산서발행금액</label>
-                        <input type="text" name="invoice_amount" id="field-invoice-amount" class="form-input text-right" placeholder="0">
+                        <input type="text" name="invoice_amount" id="field-invoice-amount" class="form-input text-right bg-gray-50" placeholder="0" readonly>
                     </div>
                     <div class="form-group">
                         <label class="form-label">실행비</label>
                         <input type="text" name="execution_cost" id="field-execution-cost" class="form-input text-right" placeholder="0" oninput="ERP.calcAmounts()">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">부가세 적용</label>
+                        <div class="flex items-center gap-2 mt-1">
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="field-vat-included" class="sr-only peer" checked onchange="ERP.calcAmounts(); document.getElementById('create-vat-label').textContent = this.checked ? '적용' : '미적용'">
+                                <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+                            </label>
+                            <span class="text-xs text-gray-500" id="create-vat-label">적용</span>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label class="form-label">직위</label>
@@ -180,7 +190,7 @@ include __DIR__ . '/../../templates/header.php';
 
         <!-- Submit Buttons -->
         <div class="flex items-center justify-end gap-3 mb-8">
-            <a href="/erp.php" class="btn btn-outline">취소</a>
+            <a href="<?= BASE_URL ?>/erp.php" class="btn btn-outline">취소</a>
             <button type="submit" id="btn-submit" class="btn btn-primary btn-lg">
                 <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                 등록하기
@@ -189,6 +199,6 @@ include __DIR__ . '/../../templates/header.php';
     </form>
 </div>
 
-<script src="/assets/js/erp.js"></script>
+<script src="<?= BASE_URL ?>/assets/js/erp.js"></script>
 
 <?php include __DIR__ . '/../../templates/footer.php'; ?>

@@ -42,8 +42,8 @@ class Company
         $db->beginTransaction();
         try {
             $db->execute(
-                'INSERT INTO companies (user_id, register_date, product_name, company_name, payment_amount, invoice_amount, execution_cost, registrant_position)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+                'INSERT INTO companies (user_id, register_date, product_name, company_name, payment_amount, invoice_amount, execution_cost, vat_included, registrant_position)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
                 [
                     $data['user_id'] ?? null,
                     $data['register_date'],
@@ -52,6 +52,7 @@ class Company
                     $data['payment_amount'] ?? 0,
                     $data['invoice_amount'] ?? 0,
                     $data['execution_cost'] ?? 0,
+                    isset($data['vat_included']) ? (int)$data['vat_included'] : 1,
                     $data['registrant_position'] ?? null,
                 ]
             );
@@ -105,7 +106,7 @@ class Company
             // Update companies table
             $companyFields = [];
             $companyParams = [];
-            $allowedCompany = ['user_id', 'register_date', 'product_name', 'company_name', 'payment_amount', 'invoice_amount', 'execution_cost', 'registrant_position'];
+            $allowedCompany = ['user_id', 'register_date', 'product_name', 'company_name', 'payment_amount', 'invoice_amount', 'execution_cost', 'vat_included', 'registrant_position'];
 
             foreach ($allowedCompany as $field) {
                 if (array_key_exists($field, $data)) {
@@ -159,6 +160,18 @@ class Company
             $db->rollback();
             throw $e;
         }
+    }
+
+    /**
+     * Soft-delete a company (set is_active = 0).
+     */
+    public static function delete(int $id): int
+    {
+        $db = Database::getInstance();
+        return $db->execute(
+            "UPDATE companies SET is_active = 0, updated_at = datetime('now', 'localtime') WHERE id = ?",
+            [$id]
+        );
     }
 
     /**

@@ -61,6 +61,7 @@ CREATE TABLE IF NOT EXISTS companies (
     payment_amount REAL NOT NULL DEFAULT 0,
     invoice_amount REAL DEFAULT 0,
     execution_cost REAL NOT NULL DEFAULT 0,
+    vat_included INTEGER NOT NULL DEFAULT 1,
     vat REAL NOT NULL DEFAULT 0,
     net_margin REAL NOT NULL DEFAULT 0,
     registrant_position TEXT,
@@ -400,8 +401,9 @@ if (!in_array('trg_companies_calc_insert', $existingTriggers)) {
     AFTER INSERT ON companies
     BEGIN
         UPDATE companies
-        SET vat = ROUND(NEW.payment_amount / 11, 0),
-            net_margin = NEW.payment_amount - NEW.execution_cost - ROUND(NEW.payment_amount / 11, 0)
+        SET vat = CASE WHEN NEW.vat_included = 1 THEN ROUND(NEW.execution_cost / 11, 0) ELSE 0 END,
+            invoice_amount = CASE WHEN NEW.vat_included = 1 THEN NEW.payment_amount - ROUND(NEW.payment_amount / 11, 0) ELSE NEW.payment_amount END,
+            net_margin = NEW.payment_amount - NEW.execution_cost - CASE WHEN NEW.vat_included = 1 THEN ROUND(NEW.execution_cost / 11, 0) ELSE 0 END
         WHERE id = NEW.id;
     END
     ");
@@ -410,11 +412,12 @@ if (!in_array('trg_companies_calc_insert', $existingTriggers)) {
 if (!in_array('trg_companies_calc_update', $existingTriggers)) {
     $pdo->exec("
     CREATE TRIGGER trg_companies_calc_update
-    AFTER UPDATE OF payment_amount, execution_cost ON companies
+    AFTER UPDATE OF payment_amount, execution_cost, vat_included ON companies
     BEGIN
         UPDATE companies
-        SET vat = ROUND(NEW.payment_amount / 11, 0),
-            net_margin = NEW.payment_amount - NEW.execution_cost - ROUND(NEW.payment_amount / 11, 0),
+        SET vat = CASE WHEN NEW.vat_included = 1 THEN ROUND(NEW.execution_cost / 11, 0) ELSE 0 END,
+            invoice_amount = CASE WHEN NEW.vat_included = 1 THEN NEW.payment_amount - ROUND(NEW.payment_amount / 11, 0) ELSE NEW.payment_amount END,
+            net_margin = NEW.payment_amount - NEW.execution_cost - CASE WHEN NEW.vat_included = 1 THEN ROUND(NEW.execution_cost / 11, 0) ELSE 0 END,
             updated_at = datetime('now', 'localtime')
         WHERE id = NEW.id;
     END

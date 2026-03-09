@@ -114,7 +114,7 @@ include __DIR__ . '/../../templates/header.php';
                 총 <span id="total-count" class="font-semibold text-gray-700">0</span>건
             </div>
             <?php if ($isAdmin): ?>
-            <a href="/pages/erp/create.php" class="btn btn-primary text-sm py-1.5">
+            <a href="<?= BASE_URL ?>/pages/erp/create.php" class="btn btn-primary text-sm py-1.5">
                 <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                 업체 등록
             </a>
@@ -192,6 +192,10 @@ include __DIR__ . '/../../templates/header.php';
                 <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
                 이월
             </button>
+            <button type="button" id="btn-delete-company" class="btn btn-outline btn-sm text-red-600 border-red-300 hover:bg-red-50" onclick="ERP.deleteCompany()">
+                <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                삭제
+            </button>
             <?php endif; ?>
             <button type="button" class="btn btn-ghost btn-icon" onclick="ERP.closeDetail()">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -214,6 +218,6 @@ include __DIR__ . '/../../templates/header.php';
         }, $users), JSON_UNESCAPED_UNICODE) ?>
     };
 </script>
-<script src="/assets/js/erp.js"></script>
+<script src="<?= BASE_URL ?>/assets/js/erp.js"></script>
 
 <?php include __DIR__ . '/../../templates/footer.php'; ?>
