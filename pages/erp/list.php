@@ -34,7 +34,13 @@ include __DIR__ . '/../../templates/header.php';
             <label class="form-label text-xs text-gray-500">기간</label>
             <input type="date" id="filter-period-start" class="form-input text-sm py-1.5 mb-2">
             <div class="text-center text-gray-400 text-xs mb-2">~</div>
-            <input type="date" id="filter-period-end" class="form-input text-sm py-1.5">
+            <input type="date" id="filter-period-end" class="form-input text-sm py-1.5 mb-2">
+            <div class="grid grid-cols-4 gap-1">
+                <button type="button" onclick="ERP.setDatePreset('today')" class="btn btn-outline text-xs py-1 px-1">오늘</button>
+                <button type="button" onclick="ERP.setDatePreset('thisWeek')" class="btn btn-outline text-xs py-1 px-1">이번주</button>
+                <button type="button" onclick="ERP.setDatePreset('thisMonth')" class="btn btn-outline text-xs py-1 px-1">이번달</button>
+                <button type="button" onclick="ERP.setDatePreset('lastMonth')" class="btn btn-outline text-xs py-1 px-1">저번달</button>
+            </div>
         </div>
 
         <?php if ($isAdmin): ?>
@@ -113,12 +119,16 @@ include __DIR__ . '/../../templates/header.php';
             <div class="text-sm text-gray-500">
                 총 <span id="total-count" class="font-semibold text-gray-700">0</span>건
             </div>
-            <?php if ($isAdmin): ?>
-            <a href="<?= BASE_URL ?>/pages/erp/create.php" class="btn btn-primary text-sm py-1.5">
-                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                업체 등록
-            </a>
-            <?php endif; ?>
+            <div class="flex items-center gap-2">
+                <button type="button" id="btn-bulk-carryover" class="btn btn-outline text-sm py-1.5 hidden" onclick="ERP.bulkCarryOver()">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                    일괄 이월 (<span id="bulk-count">0</span>)
+                </button>
+                <a href="<?= BASE_URL ?>/pages/erp/create.php" class="btn btn-primary text-sm py-1.5">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    업체 등록
+                </a>
+            </div>
         </div>
 
         <!-- Table -->
@@ -127,6 +137,7 @@ include __DIR__ . '/../../templates/header.php';
                 <table class="w-full text-left" id="erp-table">
                     <thead>
                         <tr class="bg-gray-50 border-b border-gray-200">
+                            <th class="px-3 py-2 text-center w-8"><input type="checkbox" id="erp-check-all" class="rounded border-gray-300" onchange="ERP.toggleCheckAll(this)"></th>
                             <th class="px-3 py-3 text-xs font-semibold text-gray-600 whitespace-nowrap cursor-pointer hover:bg-gray-100" data-sort="register_date">
                                 등록일 <span class="sort-icon">&#8597;</span>
                             </th>
@@ -148,7 +159,7 @@ include __DIR__ . '/../../templates/header.php';
                     </thead>
                     <tbody id="erp-table-body" class="divide-y divide-gray-100">
                         <tr>
-                            <td colspan="9" class="px-4 py-12 text-center text-gray-400 text-sm">
+                            <td colspan="10" class="px-4 py-12 text-center text-gray-400 text-sm">
                                 <div class="spinner mx-auto mb-2"></div>
                                 데이터를 불러오는 중...
                             </td>
@@ -183,7 +194,6 @@ include __DIR__ . '/../../templates/header.php';
     <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between z-10">
         <h3 class="text-lg font-semibold text-gray-900" id="detail-title">업체 상세정보</h3>
         <div class="flex items-center gap-2">
-            <?php if ($isAdmin): ?>
             <button type="button" id="btn-edit-company" class="btn btn-outline btn-sm" onclick="ERP.openEditMode()">
                 <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                 수정
@@ -196,7 +206,6 @@ include __DIR__ . '/../../templates/header.php';
                 <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                 삭제
             </button>
-            <?php endif; ?>
             <button type="button" class="btn btn-ghost btn-icon" onclick="ERP.closeDetail()">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
@@ -218,6 +227,6 @@ include __DIR__ . '/../../templates/header.php';
         }, $users), JSON_UNESCAPED_UNICODE) ?>
     };
 </script>
-<script src="<?= BASE_URL ?>/assets/js/erp.js"></script>
+<script src="<?= BASE_URL ?>/assets/js/erp.js?v=<?= time() ?>"></script>
 
 <?php include __DIR__ . '/../../templates/footer.php'; ?>

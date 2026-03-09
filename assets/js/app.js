@@ -25,7 +25,13 @@
      * @param {object|null} data - Request body data (for POST/PUT)
      * @returns {Promise<object>} Parsed JSON response
      */
+    var BASE = window.BASE_URL || '';
+
     async function apiRequest(url, method = 'GET', data = null) {
+        // 절대 경로(/api/...)를 BASE_URL 기반으로 변환
+        if (url.startsWith('/')) {
+            url = BASE + url;
+        }
         const options = {
             method: method.toUpperCase(),
             headers: {
@@ -52,7 +58,7 @@
         if (response.status === 401) {
             showToast('세션이 만료되었습니다. 다시 로그인하세요.', 'error');
             setTimeout(() => {
-                window.location.href = '/login.php';
+                window.location.href = BASE + '/login.php';
             }, 1500);
             throw new Error('Unauthorized');
         }
@@ -301,7 +307,7 @@
             } catch (err) {
                 // Ignore errors — redirect anyway
             }
-            window.location.href = '/login.php';
+            window.location.href = BASE + '/login.php';
         });
     }
 

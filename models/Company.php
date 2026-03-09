@@ -117,6 +117,34 @@ class Company
 
             $affected = 0;
             if (!empty($companyFields)) {
+                // 금액 관련 필드가 변경되면 vat/invoice_amount/net_margin 재계산
+                $needsRecalc = false;
+                foreach (['payment_amount', 'execution_cost', 'vat_included'] as $f) {
+                    if (array_key_exists($f, $data)) {
+                        $needsRecalc = true;
+                        break;
+                    }
+                }
+
+                if ($needsRecalc) {
+                    // 현재 DB 값을 기준으로 변경될 값 병합
+                    $current = $db->fetch('SELECT payment_amount, execution_cost, vat_included FROM companies WHERE id = ?', [$id]);
+                    $payment = array_key_exists('payment_amount', $data) ? (float)$data['payment_amount'] : (float)$current['payment_amount'];
+                    $execution = array_key_exists('execution_cost', $data) ? (float)$data['execution_cost'] : (float)$current['execution_cost'];
+                    $vatIncluded = array_key_exists('vat_included', $data) ? (int)$data['vat_included'] : (int)$current['vat_included'];
+
+                    $vat = $vatIncluded ? round($execution / 11) : 0;
+                    $invoiceAmt = $vatIncluded ? $payment - round($payment / 11) : $payment;
+                    $netMargin = $payment - $execution - $vat;
+
+                    $companyFields[] = "vat = ?";
+                    $companyParams[] = $vat;
+                    $companyFields[] = "invoice_amount = ?";
+                    $companyParams[] = $invoiceAmt;
+                    $companyFields[] = "net_margin = ?";
+                    $companyParams[] = $netMargin;
+                }
+
                 $companyFields[] = "updated_at = datetime('now', 'localtime')";
                 $companyParams[] = $id;
                 $affected = $db->execute(

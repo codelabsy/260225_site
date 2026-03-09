@@ -32,18 +32,15 @@ if (!Auth::check()) {
     exit;
 }
 
-if (!Auth::isAdmin()) {
-    http_response_code(403);
-    echo json_encode(['success' => false, 'message' => '관리자 권한이 필요합니다.']);
-    exit;
-}
-
 $input = json_decode(file_get_contents('php://input'), true);
 if (!$input) {
     http_response_code(400);
     echo json_encode(['success' => false, 'message' => '잘못된 요청 데이터입니다.']);
     exit;
 }
+
+// Debug log
+error_log('ERP UPDATE input: ' . json_encode(['vat_included' => $input['vat_included'] ?? 'NOT_SET', 'id' => $input['id'] ?? 'NOT_SET']));
 
 $id = (int)($input['id'] ?? 0);
 if ($id <= 0) {
@@ -57,6 +54,14 @@ $existing = Company::find($id);
 if (!$existing) {
     http_response_code(404);
     echo json_encode(['success' => false, 'message' => '업체를 찾을 수 없습니다.']);
+    exit;
+}
+
+// 관리자이거나 자기 데이터만 수정 가능
+$currentUser = Auth::user();
+if (!Auth::isAdmin() && (int)($existing['user_id'] ?? 0) !== (int)$currentUser['id']) {
+    http_response_code(403);
+    echo json_encode(['success' => false, 'message' => '본인의 데이터만 수정할 수 있습니다.']);
     exit;
 }
 
@@ -94,7 +99,7 @@ if (!empty($errors)) {
 
 // Build update data
 $data = [];
-$companyFields = ['user_id', 'register_date', 'product_name', 'company_name', 'payment_amount', 'invoice_amount', 'execution_cost', 'registrant_position'];
+$companyFields = ['user_id', 'register_date', 'product_name', 'company_name', 'payment_amount', 'invoice_amount', 'execution_cost', 'vat_included', 'registrant_position'];
 $detailFields = ['sales_register_date', 'work_start_date', 'work_end_date', 'contract_start', 'contract_end', 'business_name', 'ceo_name', 'phone', 'payment_type', 'business_number', 'work_keywords', 'work_content', 'email', 'naver_account', 'detail_execution_cost'];
 
 foreach (array_merge($companyFields, $detailFields) as $field) {
@@ -102,6 +107,8 @@ foreach (array_merge($companyFields, $detailFields) as $field) {
         $value = $input[$field];
         if (in_array($field, ['payment_amount', 'invoice_amount', 'execution_cost', 'detail_execution_cost'])) {
             $value = (float)$value;
+        } elseif ($field === 'vat_included') {
+            $value = (int)$value;
         } elseif ($field === 'user_id') {
             $value = !empty($value) ? (int)$value : null;
         } elseif (is_string($value)) {

@@ -19,6 +19,7 @@
         </div>
     </footer>
 
-    <script src="/assets/js/app.js"></script>
+    <script>window.BASE_URL = '<?= BASE_URL ?>';</script>
+    <script src="<?= BASE_URL ?>/assets/js/app.js?v=<?= time() ?>"></script>
 </body>
 </html>

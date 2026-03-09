@@ -38,13 +38,6 @@ try {
         exit;
     }
 
-    // Permission check: admin or own data
-    if (!Permission::canAccessData((int)$company['user_id'])) {
-        http_response_code(403);
-        echo json_encode(['success' => false, 'message' => '접근 권한이 없습니다.']);
-        exit;
-    }
-
     // Get memos
     $memos = Memo::getByTarget('company', $id);
 

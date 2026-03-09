@@ -32,12 +32,6 @@ if (!Auth::check()) {
     exit;
 }
 
-if (!Auth::isAdmin()) {
-    http_response_code(403);
-    echo json_encode(['success' => false, 'message' => '관리자 권한이 필요합니다.']);
-    exit;
-}
-
 $input = json_decode(file_get_contents('php://input'), true);
 if (!$input) {
     http_response_code(400);
@@ -94,6 +88,7 @@ $data = [
     'payment_amount' => $paymentAmount,
     'invoice_amount' => $invoiceAmount,
     'execution_cost' => $executionCost,
+    'vat_included' => isset($input['vat_included']) ? (int)$input['vat_included'] : 1,
     'registrant_position' => trim($input['registrant_position'] ?? ''),
     'sales_register_date' => $input['sales_register_date'] ?? null,
     'work_start_date' => $input['work_start_date'] ?? null,

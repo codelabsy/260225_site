@@ -31,18 +31,26 @@ if (!Auth::check()) {
     exit;
 }
 
-if (!Auth::isAdmin()) {
-    http_response_code(403);
-    echo json_encode(['success' => false, 'message' => '관리자 권한이 필요합니다.']);
-    exit;
-}
-
 $input = json_decode(file_get_contents('php://input'), true);
 $id = (int)($input['id'] ?? 0);
 
 if ($id <= 0) {
     http_response_code(400);
     echo json_encode(['success' => false, 'message' => '유효하지 않은 ID입니다.']);
+    exit;
+}
+
+// 관리자이거나 자기 데이터만 이월 가능
+$existing = Company::find($id);
+if (!$existing) {
+    http_response_code(404);
+    echo json_encode(['success' => false, 'message' => '업체를 찾을 수 없습니다.']);
+    exit;
+}
+$currentUser = Auth::user();
+if (!Auth::isAdmin() && (int)($existing['user_id'] ?? 0) !== (int)$currentUser['id']) {
+    http_response_code(403);
+    echo json_encode(['success' => false, 'message' => '본인의 데이터만 이월할 수 있습니다.']);
     exit;
 }
 

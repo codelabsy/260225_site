@@ -13,7 +13,8 @@ class Permission
     public static function requireLogin(): void
     {
         if (!Auth::check()) {
-            header('Location: /login.php');
+            $base = defined('BASE_URL') ? BASE_URL : '';
+            header('Location: ' . $base . '/login.php');
             exit;
         }
     }

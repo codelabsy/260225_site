@@ -58,23 +58,25 @@
         if (!tbody) return;
 
         if (!items || items.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="9" class="px-4 py-12 text-center text-gray-400 text-sm">데이터가 없습니다.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="10" class="px-4 py-12 text-center text-gray-400 text-sm">데이터가 없습니다.</td></tr>';
             return;
         }
 
         var html = '';
         items.forEach(function (item, idx) {
             var netMarginClass = (parseFloat(item.net_margin) || 0) >= 0 ? 'text-green-600' : 'text-red-600';
-            html += '<tr class="' + (idx % 2 === 1 ? 'bg-gray-50/50' : 'bg-white') + ' hover:bg-blue-50/50 transition-colors cursor-pointer" data-id="' + item.id + '" onclick="ERP.openDetail(' + item.id + ')">';
-            html += '<td class="px-3 py-2.5 text-xs text-gray-700 whitespace-nowrap">' + escapeHtml(item.register_date || '') + '</td>';
-            html += '<td class="px-3 py-2.5 text-xs text-gray-700 whitespace-nowrap text-truncate max-w-[120px]">' + escapeHtml(item.product_name || '') + '</td>';
-            html += '<td class="px-3 py-2.5 text-xs text-gray-900 font-medium whitespace-nowrap text-truncate max-w-[140px]">' + escapeHtml(item.company_name || '') + '</td>';
-            html += '<td class="px-3 py-2.5 text-xs text-gray-600 whitespace-nowrap">' + escapeHtml(item.user_name || '-') + '</td>';
-            html += '<td class="px-3 py-2.5 text-xs text-gray-700 text-right whitespace-nowrap">' + formatNumber(item.payment_amount) + '</td>';
-            html += '<td class="px-3 py-2.5 text-xs text-gray-700 text-right whitespace-nowrap">' + formatNumber(item.invoice_amount) + '</td>';
-            html += '<td class="px-3 py-2.5 text-xs text-gray-700 text-right whitespace-nowrap">' + formatNumber(item.execution_cost) + '</td>';
-            html += '<td class="px-3 py-2.5 text-xs text-gray-700 text-right whitespace-nowrap">' + formatNumber(item.vat) + '</td>';
-            html += '<td class="px-3 py-2.5 text-xs font-medium text-right whitespace-nowrap ' + netMarginClass + '">' + formatNumber(item.net_margin) + '</td>';
+            html += '<tr class="' + (idx % 2 === 1 ? 'bg-gray-50/50' : 'bg-white') + ' hover:bg-blue-50/50 transition-colors cursor-pointer" data-id="' + item.id + '">';
+            html += '<td class="px-3 py-2 text-center" onclick="event.stopPropagation()"><input type="checkbox" class="erp-row-check rounded border-gray-300" value="' + item.id + '" onchange="ERP.updateBulkCount()"></td>';
+            html += '<td class="px-3 py-2.5 text-xs text-gray-700 whitespace-nowrap" onclick="ERP.openDetail(' + item.id + ')">' + escapeHtml(item.register_date || '') + '</td>';
+            var oc = ' onclick="ERP.openDetail(' + item.id + ')"';
+            html += '<td class="px-3 py-2.5 text-xs text-gray-700 whitespace-nowrap text-truncate max-w-[120px]"' + oc + '>' + escapeHtml(item.product_name || '') + '</td>';
+            html += '<td class="px-3 py-2.5 text-xs text-gray-900 font-medium whitespace-nowrap text-truncate max-w-[140px]"' + oc + '>' + escapeHtml(item.company_name || '') + '</td>';
+            html += '<td class="px-3 py-2.5 text-xs text-gray-600 whitespace-nowrap"' + oc + '>' + escapeHtml(item.user_name || '-') + '</td>';
+            html += '<td class="px-3 py-2.5 text-xs text-gray-700 text-right whitespace-nowrap"' + oc + '>' + formatNumber(item.payment_amount) + '</td>';
+            html += '<td class="px-3 py-2.5 text-xs text-gray-700 text-right whitespace-nowrap"' + oc + '>' + formatNumber(item.invoice_amount) + '</td>';
+            html += '<td class="px-3 py-2.5 text-xs text-gray-700 text-right whitespace-nowrap"' + oc + '>' + formatNumber(item.execution_cost) + '</td>';
+            html += '<td class="px-3 py-2.5 text-xs text-gray-700 text-right whitespace-nowrap"' + oc + '>' + formatNumber(item.vat) + '</td>';
+            html += '<td class="px-3 py-2.5 text-xs font-medium text-right whitespace-nowrap ' + netMarginClass + '"' + oc + '>' + formatNumber(item.net_margin) + '</td>';
             html += '</tr>';
         });
         tbody.innerHTML = html;
@@ -155,6 +157,36 @@
         ERP.loadList();
     };
 
+    ERP.setDatePreset = function (preset) {
+        var now = new Date();
+        var start, end;
+        var fmt = function (d) {
+            return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+        };
+
+        if (preset === 'today') {
+            start = end = fmt(now);
+        } else if (preset === 'thisWeek') {
+            var day = now.getDay() || 7;
+            var mon = new Date(now);
+            mon.setDate(now.getDate() - day + 1);
+            var sun = new Date(mon);
+            sun.setDate(mon.getDate() + 6);
+            start = fmt(mon);
+            end = fmt(sun);
+        } else if (preset === 'thisMonth') {
+            start = fmt(new Date(now.getFullYear(), now.getMonth(), 1));
+            end = fmt(new Date(now.getFullYear(), now.getMonth() + 1, 0));
+        } else if (preset === 'lastMonth') {
+            start = fmt(new Date(now.getFullYear(), now.getMonth() - 1, 1));
+            end = fmt(new Date(now.getFullYear(), now.getMonth(), 0));
+        }
+
+        document.getElementById('filter-period-start').value = start;
+        document.getElementById('filter-period-end').value = end;
+        ERP.applyFilters();
+    };
+
     ERP.goToPage = function (page) {
         currentPage = page;
         ERP.loadList();
@@ -164,6 +196,69 @@
         currentPageSize = parseInt(size, 10);
         currentPage = 1;
         ERP.loadList();
+    };
+
+    /* ======================================================================
+       Checkbox & Bulk Actions
+       ====================================================================== */
+
+    ERP.toggleCheckAll = function (el) {
+        var checks = document.querySelectorAll('.erp-row-check');
+        checks.forEach(function (c) { c.checked = el.checked; });
+        ERP.updateBulkCount();
+    };
+
+    ERP.updateBulkCount = function () {
+        var checked = document.querySelectorAll('.erp-row-check:checked');
+        var btn = document.getElementById('btn-bulk-carryover');
+        var count = document.getElementById('bulk-count');
+        if (btn) {
+            if (checked.length > 0) {
+                btn.classList.remove('hidden');
+                count.textContent = checked.length;
+            } else {
+                btn.classList.add('hidden');
+            }
+        }
+        var allCheck = document.getElementById('erp-check-all');
+        var total = document.querySelectorAll('.erp-row-check');
+        if (allCheck) allCheck.checked = total.length > 0 && checked.length === total.length;
+    };
+
+    ERP.bulkCarryOver = function () {
+        var checked = document.querySelectorAll('.erp-row-check:checked');
+        var ids = [];
+        checked.forEach(function (c) { ids.push(parseInt(c.value)); });
+
+        if (ids.length === 0) {
+            showToast('이월할 업체를 선택하세요.', 'error');
+            return;
+        }
+
+        confirmAction(ids.length + '건의 업체를 일괄 이월 처리하시겠습니까?\n각 업체마다 새로운 레코드가 생성됩니다.').then(function (confirmed) {
+            if (!confirmed) return;
+
+            var completed = 0;
+            var failed = 0;
+            var total = ids.length;
+
+            ids.forEach(function (id) {
+                apiRequest('/api/erp/carry-over.php', 'POST', { id: id })
+                    .then(function (res) {
+                        if (res.success) completed++;
+                        else failed++;
+                    })
+                    .catch(function () { failed++; })
+                    .finally(function () {
+                        if (completed + failed === total) {
+                            var msg = '일괄 이월 완료: 성공 ' + completed + '건';
+                            if (failed > 0) msg += ', 실패 ' + failed + '건';
+                            showToast(msg, failed > 0 ? 'warning' : 'success');
+                            ERP.loadList();
+                        }
+                    });
+            });
+        });
     };
 
     /* ======================================================================
@@ -526,7 +621,6 @@
 
         var data = {
             id: currentDetailId,
-            user_id: getVal('edit-user-id'),
             register_date: getVal('edit-register-date'),
             product_name: getVal('edit-product-name'),
             company_name: getVal('edit-company-name'),
@@ -551,6 +645,10 @@
             detail_execution_cost: parseAmount(getVal('edit-detail-execution-cost')),
             vat_included: document.getElementById('edit-vat-included').checked ? 1 : 0,
         };
+
+        // user_id는 값이 있을 때만 포함 (직원은 담당자 목록이 없으므로 빈값 방지)
+        var userId = getVal('edit-user-id');
+        if (userId) data.user_id = userId;
 
         apiRequest('/api/erp/update.php', 'POST', data)
             .then(function (res) {

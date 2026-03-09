@@ -8,7 +8,7 @@ require_once __DIR__ . '/../../core/Auth.php';
 require_once __DIR__ . '/../../core/Permission.php';
 require_once __DIR__ . '/../../models/User.php';
 
-Permission::requireAdmin();
+Permission::requireLogin();
 
 $currentUser = Auth::user();
 $isAdmin = Auth::isAdmin();
@@ -199,6 +199,6 @@ include __DIR__ . '/../../templates/header.php';
     </form>
 </div>
 
-<script src="<?= BASE_URL ?>/assets/js/erp.js"></script>
+<script src="<?= BASE_URL ?>/assets/js/erp.js?v=<?= time() ?>"></script>
 
 <?php include __DIR__ . '/../../templates/footer.php'; ?>
