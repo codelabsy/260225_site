@@ -144,7 +144,7 @@ CREATE TABLE IF NOT EXISTS shopping_db (
     representative TEXT,
     phone TEXT NOT NULL,
     mobile_phone TEXT,
-    status TEXT NOT NULL DEFAULT '안함' CHECK(status IN ('부재', '재통', '가망', '계약완료', '안함')),
+    status TEXT NOT NULL DEFAULT '대기중' CHECK(status IN ('대기중', '부재', '재통', '가망', '계약완료', '거절')),
     upload_history_id INTEGER REFERENCES upload_histories(id) ON DELETE SET NULL,
     keyword TEXT,
     page_number TEXT,
@@ -179,6 +179,34 @@ CREATE TABLE IF NOT EXISTS shopping_db (
 ");
 
 $pdo->exec("
+CREATE TABLE IF NOT EXISTS coupang_db (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    company_name TEXT,
+    representative TEXT,
+    phone TEXT NOT NULL,
+    mobile_phone TEXT,
+    status TEXT NOT NULL DEFAULT '대기중' CHECK(status IN ('대기중', '부재', '재통', '가망', '계약완료', '거절')),
+    upload_history_id INTEGER REFERENCES upload_histories(id) ON DELETE SET NULL,
+    keyword TEXT,
+    product_name TEXT,
+    product_id TEXT,
+    email TEXT,
+    business_number TEXT,
+    address TEXT,
+    address_detail TEXT,
+    rating_count INTEGER,
+    recommend_count INTEGER,
+    not_recommend_count INTEGER,
+    recommend_ratio INTEGER,
+    collected_at TEXT,
+    notes TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
+    updated_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
+)
+");
+
+$pdo->exec("
 CREATE TABLE IF NOT EXISTS place_db (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
@@ -187,7 +215,7 @@ CREATE TABLE IF NOT EXISTS place_db (
     region TEXT,
     register_date TEXT NOT NULL,
     source TEXT,
-    status TEXT NOT NULL DEFAULT '일반' CHECK(status IN ('일반', '부재', '재통', '가망', '거절', '계약완료')),
+    status TEXT NOT NULL DEFAULT '대기중' CHECK(status IN ('대기중', '부재', '재통', '가망', '계약완료', '거절')),
     initial_memo TEXT,
     request_content TEXT,
     contract_date TEXT,
@@ -201,7 +229,7 @@ CREATE TABLE IF NOT EXISTS place_db (
 $pdo->exec("
 CREATE TABLE IF NOT EXISTS memos (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    target_type TEXT NOT NULL CHECK(target_type IN ('company', 'shopping', 'place')),
+    target_type TEXT NOT NULL CHECK(target_type IN ('company', 'shopping', 'coupang', 'place')),
     target_id INTEGER NOT NULL,
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
     content TEXT NOT NULL,
@@ -214,7 +242,7 @@ CREATE TABLE IF NOT EXISTS memos (
 $pdo->exec("
 CREATE TABLE IF NOT EXISTS status_histories (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    target_type TEXT NOT NULL CHECK(target_type IN ('shopping', 'place')),
+    target_type TEXT NOT NULL CHECK(target_type IN ('shopping', 'coupang', 'place')),
     target_id INTEGER NOT NULL,
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
     old_status TEXT,
@@ -241,7 +269,7 @@ CREATE TABLE IF NOT EXISTS activity_logs (
 $pdo->exec("
 CREATE TABLE IF NOT EXISTS db_assignments (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    db_type TEXT NOT NULL CHECK(db_type IN ('shopping', 'place')),
+    db_type TEXT NOT NULL CHECK(db_type IN ('shopping', 'coupang', 'place')),
     db_id INTEGER NOT NULL,
     from_user_id INTEGER REFERENCES users(id),
     to_user_id INTEGER REFERENCES users(id),
@@ -324,6 +352,13 @@ $indexes = [
     'CREATE INDEX IF NOT EXISTS idx_shopping_status ON shopping_db(status)',
     'CREATE INDEX IF NOT EXISTS idx_shopping_created_at ON shopping_db(created_at)',
     'CREATE INDEX IF NOT EXISTS idx_shopping_company_name ON shopping_db(company_name)',
+
+    // coupang_db
+    'CREATE INDEX IF NOT EXISTS idx_coupang_user_id ON coupang_db(user_id)',
+    'CREATE INDEX IF NOT EXISTS idx_coupang_phone ON coupang_db(phone)',
+    'CREATE INDEX IF NOT EXISTS idx_coupang_status ON coupang_db(status)',
+    'CREATE INDEX IF NOT EXISTS idx_coupang_created_at ON coupang_db(created_at)',
+    'CREATE INDEX IF NOT EXISTS idx_coupang_company_name ON coupang_db(company_name)',
 
     // place_db
     'CREATE INDEX IF NOT EXISTS idx_place_user_id ON place_db(user_id)',
